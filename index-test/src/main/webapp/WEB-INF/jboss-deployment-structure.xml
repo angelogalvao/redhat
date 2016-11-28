@@ -1,0 +1,13 @@
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <dependencies>
+            <module name="org.infinispan.commons" slot="jdg-6.6" services="export"/>
+            <module name="org.infinispan.client.hotrod" slot="jdg-6.6" services="export"/>
+            <module name="org.infinispan.protostream"  slot="jdg-6.6" services="export"/>       
+            <module name="org.infinispan.query.dsl"  slot="jdg-6.6" services="export"/>
+            
+            <module name="javax.cache.api" slot="jdg-6.6" services="export"/>
+            
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
