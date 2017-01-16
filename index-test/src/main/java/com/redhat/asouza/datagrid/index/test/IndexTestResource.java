@@ -3,6 +3,7 @@ package com.redhat.asouza.datagrid.index.test;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -13,6 +14,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang.RandomStringUtils;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
+import org.infinispan.commons.util.concurrent.FutureListener;
+import org.infinispan.commons.util.concurrent.NotifyingFuture;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
@@ -38,7 +41,16 @@ public class IndexTestResource {
 			data.put(new Long(i + 1), foo);
 		}
 
-		cache.putAllAsync(data);
+		NotifyingFuture<Void>  a = cache.putAllAsync(data);
+		
+		a.attachListener(new FutureListener<Void>() {
+			
+			@Override
+			public void futureDone(Future<Void> future) {
+				//get
+				
+			}
+		});
 
 		return "Data loaded in JBoss Data Grid succefully";
 

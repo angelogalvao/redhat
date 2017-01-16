@@ -9,6 +9,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.annotations.ProtoSchemaBuilder;
@@ -29,14 +30,16 @@ public class EnviromentProducer {
 	@PostConstruct
 	public void configureCache() throws Exception {
 
-		Configuration conf = new ConfigurationBuilder().tcpNoDelay(true).addServers("localhost")
+		Configuration conf = new ConfigurationBuilder().tcpNoDelay(true)
+				
+				.nearCache().mode(NearCacheMode.LAZY).maxEntries(100)
+				.addServers("localhost")
 				.marshaller(new ProtoStreamMarshaller())				
 				.build();
 
 		cacheManager = new RemoteCacheManager(conf);
 
 		// registar os marsshallers
-
 		SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext(cacheManager);
 
 		//ctx.registerMarshaller(new FooMarshaller());
@@ -45,9 +48,7 @@ public class EnviromentProducer {
 		String fooSchemaFile = protoSchemaBuilder.fileName("foo.proto")
 												 .packageName("test")
 												 .addClass(Foo.class)												 
-												 .build(ctx);
-
-			
+												 .build(ctx);			
 		
 		// register the schemas with the server too
 		RemoteCache<String, String> metadataCache = cacheManager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
