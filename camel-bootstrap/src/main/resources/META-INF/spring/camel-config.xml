@@ -1,53 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-    JBoss, Home of Professional Open Source
-    Copyright 2014, Red Hat, Inc. and/or its affiliates, and individual
-    contributors by the @authors tag. See the copyright.txt in the
-    distribution for a full listing of individual contributors.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
--->
-<!-- Configures the Camel Context-->
+<!-- JBoss, Home of Professional Open Source Copyright 2014, Red Hat, Inc. 
+	and/or its affiliates, and individual contributors by the @authors tag. See 
+	the copyright.txt in the distribution for a full listing of individual contributors. 
+	Licensed under the Apache License, Version 2.0 (the "License"); you may not 
+	use this file except in compliance with the License. You may obtain a copy 
+	of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+<!-- Configures the Camel Context -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <camelContext id="_camelContext1" xmlns="http://camel.apache.org/schema/spring">
-        <route id="checkLiveness">
-            <from id="_from1" uri="timer:livenessCheckerTimer?delay=0&amp;period=1000"/>
-            <to id="_to1" uri="netty4-http:http://localhost:8161/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,module=Core,serviceType=Server/Backup"/>
-            <transform id="_transform1">
-                <jsonpath>$.value.*.Backup</jsonpath>
-            </transform>
-            <log id="_log1" message="${date:now:yyyyMMdd HH:mm:ss} => ${body}"/>
-            <setProperty id="_setProperty1" propertyName="backup">
-                <simple>${body}</simple>
-            </setProperty>
-            <to id="_to4" uri="controlbus:route:language?action=status&amp;routeId=CamelBridge&amp;loggingLevel=OFF"/>
-            <setProperty id="_setProperty2" propertyName="routeStatus">
-                <simple>${body}</simple>
-            </setProperty>
-            <choice id="_choice1">
-                <when id="_when1">
-                    <simple>${exchangeProperty.backup} == '[true]' and ${exchangeProperty.routeStatus} != 'Stopped'</simple>
-                    <to id="_to2" uri="controlbus:route:simple?action=suspend&amp;routeId=CamelBridge"/>
-                </when>
-                <when id="_when2">
-                    <simple>${exchangeProperty.backup} == '[false]' and ${exchangeProperty.routeStatus} == 'Stopped'</simple>
-                    <to id="_to3" uri="controlbus:route:simple?action=resume&amp;routeId=CamelBridge"/>
-                </when>
-            </choice>
-        </route>
-        <route autoStartup="false" id="CamelBridge">
-            <from id="_from2" uri="timer:bridgeTimer"/>
-            <log id="_log2" message="***I am Bridging!!***"/>
-            <to uri="http://localhost:8080/camel-test-endpoint-1.0/test/test"/>
-        </route>
-    </camelContext>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        
+    					http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<!-- Configuração de acessos aos brokers do JBoss A-MQ (LOCAL) e o IBM MQSeries -->
+	<bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="vm://amq?create=false" />
+		<property name="userName" value="admin" />
+		<property name="password" value="admin" />
+	</bean>
+
+	<bean id="amqConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="amqConnectionFactory" />
+		<property name="concurrentConsumers" value="10" />
+	</bean>
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="amqConfig" />
+	</bean>
+
+	<bean id="wmqConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="wmqConnectionFactory" />
+		<property name="concurrentConsumers" value="10" />
+	</bean>
+
+	<bean id="wmq" class="org.apache.camel.component.jms.JmsComponent">
+		<property name="configuration" ref="wmqConfig" />
+	</bean>
+
+	<bean id="wmqConnectionFactory" class="com.ibm.mq.jms.MQQueueConnectionFactory">
+		<property name="transportType" value="1" />
+		<property name="hostName" value="CHANGE ME" />
+		<property name="port" value="CHANGE ME" />
+		<property name="queueManager" value="CHANGE ME" />
+		<property name="channel" value="CHANGE ME" />
+		<property name="targetClientMatching" value="true" />
+	</bean>
+
+	<bean id="WMQ-Queue" class="com.ibm.mq.jms.MQQueue">
+		<constructor-arg value="QM CHANGE ME" />
+		<constructor-arg value="QName CHANGEME" />
+		<property name="targetClient" value="1" />
+	</bean>
+
+	<bean id="AMQ-Queue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="QName CHANGEME" />
+	</bean>
+
+	<!-- Rota Camel que executa a bridge entre o A-MQ e o IBM MQSeries -->
+
+	<camelContext id="_camelContext1" xmlns="http://camel.apache.org/schema/spring">
+		<route id="checkLiveness">
+			<from id="_from1" uri="timer:livenessCheckerTimer?delay=0&amp;period=1000" />
+			<to id="_to1"
+				uri="netty4-http:http://localhost:8161/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,module=Core,serviceType=Server/Backup" />
+			<transform id="_transform1">
+				<jsonpath>$.value.*.Backup</jsonpath>
+			</transform>
+			<log id="_log1" message="${date:now:yyyyMMdd HH:mm:ss} => ${body}" />
+			<setProperty id="_setProperty1" propertyName="backup">
+				<simple>${body}</simple>
+			</setProperty>
+			<to id="_to4"
+				uri="controlbus:route:language?action=status&amp;routeId=CamelBridge&amp;loggingLevel=OFF" />
+			<setProperty id="_setProperty2" propertyName="routeStatus">
+				<simple>${body}</simple>
+			</setProperty>
+			<choice id="_choice1">
+				<when id="_when1">
+					<simple>${exchangeProperty.backup} == '[true]' and ${exchangeProperty.routeStatus} != 'Stopped'</simple>
+					<to id="_to2"
+						uri="controlbus:route:simple?action=suspend&amp;routeId=CamelBridge" />
+				</when>
+				<when id="_when2">
+					<simple>${exchangeProperty.backup} == '[false]' and ${exchangeProperty.routeStatus} == 'Stopped'</simple>
+					<to id="_to3"
+						uri="controlbus:route:simple?action=resume&amp;routeId=CamelBridge" />
+				</when>
+			</choice>
+		</route>
+
+		
+		<route id="CamelBridge">
+			<from uri="activemq:queue:CHANGEME?disableReplyTo=true" />
+            <setHeader headerName="JMS_IBM_MsgType">
+                <constant>8</constant>
+            </setHeader>
+            <setHeader headerName="JMS_IBM_MsgType">
+                <simple>${headerAs("JMS_IBM_MsgType", java.lang.Integer)}</simple>
+            </setHeader>
+			<to uri="wmq:queue:CHANGEME?destination=#WMQ-Queue&amp;disableReplyTo=true" />
+		</route>
+
+	</camelContext>
 </beans>
