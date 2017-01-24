@@ -14,7 +14,8 @@
 	will be automatically activated as soon as the bundle is installed. The root 
 	element for any OSGi Blueprint file is 'blueprint' - you also see the namespace 
 	definitions for both the Blueprint and the Camel namespaces. -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+<!-- <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" -->
+<beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:camel-cxf="http://camel.apache.org/schema/cxf"
     xmlns:cxf="http://cxf.apache.org/blueprint/core"
     xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
@@ -38,31 +39,30 @@
             <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
             <ref bean="exceptionMapper"/>
         </jaxrs:providers>
-
         <jaxrs:features>
             <bean class="io.fabric8.cxf.endpoint.SwaggerFeature">
                 <property name="title" value="Porto Conecta - Piloto - JAXRS Service"/>
                 <property name="description" value="Exemplo de serviço REST"/>
                 <property name="version" value="${project.version}"/>
             </bean>
-            
-            <ref bean="jaxrsValidationFeature" />
+            <ref bean="jaxrsValidationFeature"/>
         </jaxrs:features>
     </jaxrs:server>
     <bean
         class="br.com.portoconecta.fuse.piloto.webservices.rest.PessoaRESTService" id="pessoaRESTService"/>
-        
-    <!-- Configurações a feature de Bean Validation -->    
-	<bean id="exceptionMapper" class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper"/>
-	<bean id="jaxrsValidationFeature" class="org.apache.cxf.validation.JAXRSBeanValidationFeature">
-	    <property name="provider" ref="beanValidationProvider"/>
-	</bean>	
-	<bean id="beanValidationProvider" class="org.apache.cxf.validation.BeanValidationProvider">		
-		<argument ref="validationProvider"/>
-	</bean>	
-	<bean id="validationProvider" class="br.com.portoconecta.fuse.piloto.validation.HibernateValidationProviderResolver"/>
-    
+    <!-- Configurações a feature de Bean Validation -->
+    <bean
+        class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper" id="exceptionMapper"/>
+    <bean class="org.apache.cxf.validation.JAXRSBeanValidationFeature" id="jaxrsValidationFeature">
+        <property name="provider" ref="beanValidationProvider"/>
+    </bean>
+    <bean class="org.apache.cxf.validation.BeanValidationProvider" id="beanValidationProvider">
+        <argument ref="validationProvider"/>
+    </bean>
+    <bean
+        class="br.com.portoconecta.fuse.piloto.validation.HibernateValidationProviderResolver" id="validationProvider"/>
     <!-- Configurações do CAMEL -->
     <!-- <camelContext id="porto-conecta-camel-context-piloto" xmlns="http://camel.apache.org/schema/blueprint"> 
 		<route id="_route1"> <from></from> </route> </camelContext> -->
-</blueprint>
+<!-- </blueprint> -->
+</beans>

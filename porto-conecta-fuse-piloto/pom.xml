@@ -214,7 +214,7 @@
 							org.apache.cxf.helpers,
 							org.osgi.service.blueprint,
 							io.fabric8.cxf.endpoint,
-							org.apache.cxf.transport.http,
+							org.apache.cxf.transport.http,							
 							javax.ws.rs,
 							javax.ws.rs.core,
 							javax.xml.bind.annotation,
@@ -223,15 +223,17 @@
 							com.wordnik.swagger.annotations,
 							io.fabric8.cxf,
 							javax.annotation;version="[1.1.0,2.0.0)",
-							com.fasterxml.jackson.annotation, com.fasterxml.jackson.core,
+							com.fasterxml.jackson.annotation, 
+							com.fasterxml.jackson.core,
 							com.fasterxml.jackson.databind,
 							com.fasterxml.jackson.jaxrs.json,
 							javax.ws.rs.ext,
 							org.hibernate.validator,
 							javax.validation,
-							org.apache.cxf.validation,*</Import-Package>
-						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
-							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service>
+							org.apache.cxf.validation,
+							org.apache.cxf.jaxrs.validation,*</Import-Package>
+						<!-- <Import-Service>org.apache.aries.blueprint.NamespaceHandler;
+							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service> -->
 
 					</instructions>
 				</configuration>

@@ -1,7 +1,9 @@
 package br.com.portoconecta.fuse.piloto.webservices.rest;
 
 import java.util.Calendar;
+import java.util.Date;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -9,6 +11,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -29,6 +33,7 @@ public class PessoaRESTService {
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Pessoa inválida")            
     })	
+	@Valid
 	public String describePessoa(Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
@@ -42,5 +47,13 @@ public class PessoaRESTService {
 		String message = "A pessoa " + pessoa.getNome() + " possui " + _nascimento.get(Calendar.YEAR) + " ano(s) de ideade. Requisição do IP: " + callerIp;
 		
 		return message;
+	}
+	
+	public static void main(String[] args) throws JsonProcessingException {
+		Pessoa pessoa = new Pessoa("Angelo", new Date(10,9,80));
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		System.out.println(mapper.writeValueAsString(pessoa));
 	}
 }
