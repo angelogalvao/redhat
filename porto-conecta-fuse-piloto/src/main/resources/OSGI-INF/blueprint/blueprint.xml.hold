@@ -14,8 +14,7 @@
 	will be automatically activated as soon as the bundle is installed. The root 
 	element for any OSGi Blueprint file is 'blueprint' - you also see the namespace 
 	definitions for both the Blueprint and the Camel namespaces. -->
-<!-- <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" -->
-<beans xmlns="http://www.springframework.org/schema/beans"
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" 
     xmlns:camel-cxf="http://camel.apache.org/schema/cxf"
     xmlns:cxf="http://cxf.apache.org/blueprint/core"
     xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
@@ -26,18 +25,22 @@
         <jaxws:properties>
             <entry key="schema-validation-enabled" value="BOTH"/>
         </jaxws:properties>
-        <!-- 		<jaxws:handlers>
-			<bean class="br.com.portoconecta.fuse.piloto.webservices.soap.PessoaSOAPServiceHandler" />
-		</jaxws:handlers> -->
+        <jaxws:features>
+            <ref bean="commonValidationFeature"/>
+        </jaxws:features>
+        <!-- <jaxws:handlers> <bean class="br.com.portoconecta.fuse.piloto.webservices.soap.PessoaSOAPServiceHandler" 
+			/> </jaxws:handlers> -->
     </jaxws:endpoint>
     <!-- Configurações do CXF: JAX-RS -->
     <jaxrs:server address="/rest" id="porto-conecta-piloto-jaxrs-server">
         <jaxrs:serviceBeans>
-            <ref component-id="pessoaRESTService"/>
+            <ref bean="pessoaRESTService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
             <ref bean="exceptionMapper"/>
+            <ref bean="portoExceptionMapper"/>
+            <ref bean="portoSystemExceptionMapper"/>
         </jaxrs:providers>
         <jaxrs:features>
             <bean class="io.fabric8.cxf.endpoint.SwaggerFeature">
@@ -45,24 +48,28 @@
                 <property name="description" value="Exemplo de serviço REST"/>
                 <property name="version" value="${project.version}"/>
             </bean>
-            <ref bean="jaxrsValidationFeature"/>
+            <ref bean="commonValidationFeature"/>
         </jaxrs:features>
     </jaxrs:server>
     <bean
         class="br.com.portoconecta.fuse.piloto.webservices.rest.PessoaRESTService" id="pessoaRESTService"/>
-    <!-- Configurações a feature de Bean Validation -->
+    <bean
+        class="br.com.portoconecta.fuse.piloto.webservices.rest.PortoConectaExceptionMapper" id="portoExceptionMapper"/>
+    <bean
+        class="br.com.portoconecta.fuse.piloto.webservices.rest.PortoConectaSystemExceptionMapper" id="portoSystemExceptionMapper"/>
+    <!-- Configurações a feature de Bean Validation - JAX-RS -->
     <bean
         class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper" id="exceptionMapper"/>
-    <bean class="org.apache.cxf.validation.JAXRSBeanValidationFeature" id="jaxrsValidationFeature">
+    <bean class="org.apache.cxf.validation.BeanValidationFeature" id="commonValidationFeature">
         <property name="provider" ref="beanValidationProvider"/>
     </bean>
     <bean class="org.apache.cxf.validation.BeanValidationProvider" id="beanValidationProvider">
-        <argument ref="validationProvider"/>
+        <argument ref="validationProviderResolver"/>
     </bean>
     <bean
-        class="br.com.portoconecta.fuse.piloto.validation.HibernateValidationProviderResolver" id="validationProvider"/>
+        class="br.com.portoconecta.fuse.piloto.validation.HibernateValidationProviderResolver" id="validationProviderResolver"/>
     <!-- Configurações do CAMEL -->
     <!-- <camelContext id="porto-conecta-camel-context-piloto" xmlns="http://camel.apache.org/schema/blueprint"> 
 		<route id="_route1"> <from></from> </route> </camelContext> -->
-<!-- </blueprint> -->
-</beans>
+</blueprint>
+

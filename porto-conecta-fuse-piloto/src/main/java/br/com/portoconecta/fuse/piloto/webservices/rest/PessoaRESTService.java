@@ -28,13 +28,12 @@ public class PessoaRESTService {
 	@Path("/describe")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Descreve as propriedades da pessoa", notes = "Mais dadodos abaixo", response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Pessoa inválida")            
     })	
-	@Valid
-	public String describePessoa(Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
+	public String describePessoa(@Valid Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
 		Calendar _nascimento = Calendar.getInstance();
@@ -42,7 +41,7 @@ public class PessoaRESTService {
 		_nascimento.setTime(pessoa.getNascimento());
 		
 		if((now.get(Calendar.YEAR) - _nascimento.get(Calendar.YEAR)) < 18)
-			throw new InvalidPessoa("A pessoa deve ser maior de idade");
+			throw new InvalidPessoa(100,"A pessoa deve ser maior de idade");
 		
 		String message = "A pessoa " + pessoa.getNome() + " possui " + _nascimento.get(Calendar.YEAR) + " ano(s) de ideade. Requisição do IP: " + callerIp;
 		
@@ -50,7 +49,7 @@ public class PessoaRESTService {
 	}
 	
 	public static void main(String[] args) throws JsonProcessingException {
-		Pessoa pessoa = new Pessoa("Angelo", new Date(10,9,80));
+		Pessoa pessoa = new Pessoa("Angelo", new Date(110, 1, 1));
 		
 		ObjectMapper mapper = new ObjectMapper();
 		

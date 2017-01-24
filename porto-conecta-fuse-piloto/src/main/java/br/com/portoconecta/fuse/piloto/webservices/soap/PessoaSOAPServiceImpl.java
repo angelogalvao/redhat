@@ -28,7 +28,7 @@ public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 		_nascimento.setTime(pessoa.getNascimento());
 		
 		if((now.get(Calendar.YEAR) - _nascimento.get(Calendar.YEAR)) < 18)
-			throw new InvalidPessoa("A pessoa deve ser maior de idade");
+			throw new InvalidPessoa(100,"A pessoa deve ser maior de idade");
 		
 		String message = "A pessoa " + pessoa.getNome() + " possui " + _nascimento.get(Calendar.YEAR) + " ano(s) de ideade. Requisição do IP: " + callerIp;
 		

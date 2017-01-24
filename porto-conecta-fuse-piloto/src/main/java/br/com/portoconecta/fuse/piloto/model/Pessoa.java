@@ -24,7 +24,7 @@ public class Pessoa implements Serializable {
 	}
 
 	@NotNull
-	@Size(min=3)
+	@Size(min=3, message="O atributo pessoa deve possuir no mínimo 3 caracteres")
 	private String nome;
 	
 	@NotNull

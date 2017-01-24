@@ -232,8 +232,8 @@
 							javax.validation,
 							org.apache.cxf.validation,
 							org.apache.cxf.jaxrs.validation,*</Import-Package>
-						<!-- <Import-Service>org.apache.aries.blueprint.NamespaceHandler;
-							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service> -->
+						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
+							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service>
 
 					</instructions>
 				</configuration>
