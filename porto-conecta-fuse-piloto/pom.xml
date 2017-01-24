@@ -236,6 +236,10 @@
 					</instructions>
 				</configuration>
 			</plugin>
+		
+		</plugins>
+		<pluginManagement>
+		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.5.1</version>
@@ -308,5 +312,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		</pluginManagement>
 	</build>
 </project>
