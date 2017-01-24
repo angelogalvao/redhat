@@ -7,7 +7,6 @@ import java.util.Date;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
-import javax.jws.WebParam.Mode;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
@@ -20,7 +19,7 @@ public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 	@Override
 	@WebMethod(operationName="describePessoa")
 	@WebResult(name="result")
-	public String describePessoa(@WebParam(name="pessoa") Pessoa pessoa, @WebParam(name="callerIp", header=true, mode=Mode.IN) String callerIp) throws InvalidPessoa {
+	public String describePessoa(@WebParam(name="pessoa") Pessoa pessoa, @WebParam(name="callerIp") String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
 		Calendar _nascimento = Calendar.getInstance();
@@ -36,7 +35,7 @@ public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 	}
 	
 	public static void main(String[] args) {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		System.out.println(df.format(new Date()));
 	}
 

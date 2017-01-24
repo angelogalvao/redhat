@@ -10,8 +10,7 @@ import javax.xml.bind.annotation.XmlType;
  * @author asouza
  *
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType
+
 public class ExceptionMessage {
 	private int statusCode;
 	private String message;

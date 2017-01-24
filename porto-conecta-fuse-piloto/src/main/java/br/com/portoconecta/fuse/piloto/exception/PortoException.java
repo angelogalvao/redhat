@@ -7,8 +7,7 @@ import javax.xml.ws.WebFault;
  * @author asouza
  *
  */
-@WebFault(name="ExceptionMessage",
-		  targetNamespace="http://www.portoconecta.com.br/exceptions")
+
 public class PortoException extends Exception {
 
 	private static final long serialVersionUID = 3362215057543667109L;
