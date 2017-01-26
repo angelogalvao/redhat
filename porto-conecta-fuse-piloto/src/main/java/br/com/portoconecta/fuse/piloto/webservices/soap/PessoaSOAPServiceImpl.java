@@ -19,7 +19,7 @@ public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 	@Override
 	@WebMethod(operationName="describePessoa")
 	@WebResult(name="result")
-	public String describePessoa(@WebParam(name="pessoa") Pessoa pessoa, @WebParam(name="callerIp") String callerIp) throws InvalidPessoa {
+	public String describePessoa(Pessoa pessoa, String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
 		Calendar _nascimento = Calendar.getInstance();
