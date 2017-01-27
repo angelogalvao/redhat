@@ -5,9 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
 import javax.jws.WebService;
 
 import br.com.portoconecta.fuse.piloto.exception.InvalidPessoa;
@@ -16,10 +13,8 @@ import br.com.portoconecta.fuse.piloto.model.Pessoa;
 @WebService(endpointInterface="br.com.portoconecta.fuse.piloto.webservices.soap.PessoaSOAPService")
 public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 
-	@Override
-	@WebMethod(operationName="describePessoa")
-	@WebResult(name="result")
-	public String describePessoa(@WebParam(name="pessoa") Pessoa pessoa, @WebParam(name="callerIp") String callerIp) throws InvalidPessoa {
+	@Override	
+	public String describePessoa(Pessoa pessoa, String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
 		Calendar _nascimento = Calendar.getInstance();
