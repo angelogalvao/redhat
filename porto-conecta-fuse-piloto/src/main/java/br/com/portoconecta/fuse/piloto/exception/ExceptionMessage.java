@@ -1,8 +1,8 @@
 package br.com.portoconecta.fuse.piloto.exception;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Modelo de exceção.
@@ -10,14 +10,16 @@ import javax.xml.bind.annotation.XmlType;
  * @author asouza
  *
  */
-
+@XmlRootElement
 public class ExceptionMessage {
+	@XmlElement
 	private int statusCode;
-	private String message;
+	@XmlElement
+	private String message;	
 	
+	public ExceptionMessage() {}
 	
 	public ExceptionMessage(int statusCode, String message) {
-		super();
 		this.statusCode = statusCode;
 		this.message = message;
 	}

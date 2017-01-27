@@ -115,7 +115,7 @@
  	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
      	<property name="maximumRedeliveries" value="3"/>
      	<property name="redeliveryDelay" value="100"/>
- 	</bean>
+ 	</bean>1.0-EIGPS-Tec Consultant
 
   	
   	<bean id="portoProcessor" class="br.com.portoconecta.fuse.piloto.jms.PortoProcessor"/>
