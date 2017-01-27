@@ -20,7 +20,16 @@
     xmlns:cxf="http://cxf.apache.org/core"
     xmlns:jaxrs="http://cxf.apache.org/jaxrs"
     xmlns:jaxws="http://cxf.apache.org/jaxws"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd           http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd          http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd          http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd                    http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd          http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd          http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+               http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+               http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+               http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+               http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd                    
+               http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd          
+               http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd          
+               http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+               
     <!-- Configurações do CXF: JAX-WS -->
     <jaxws:endpoint address="/PessoaService" id="pessoaSOAPService" implementor="br.com.portoconecta.fuse.piloto.webservices.soap.PessoaSOAPServiceImpl">
         <jaxws:properties>
@@ -69,6 +78,55 @@
     </bean>
     <bean
         class="br.com.portoconecta.fuse.piloto.validation.HibernateValidationProviderResolver" id="validationProviderResolver"/>
+        
+   <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="tcp://localhost:61616"/>
+		<property name="userName" value="admin"/>
+		<property name="password" value="admin"/>
+	</bean>  
+	
+	
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+		<routeBuilder ref="portoJmsRoute" />
+		
+		<dataFormats>
+			<json id="jsonPessoa" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
+			<json id="json" library="Jackson" allowJmsType="true"/>
+		</dataFormats>
+		
+		<route>
+			<from uri="activemq:queue:testeSpring"/>
+			<unmarshal ref="jsonPessoa" />
+			<bean ref="portoProcessor" method="processar"/>
+  		</route>
+  		
+  		<route errorHandlerRef="myDeadLetterErrorHandler">
+			<from uri="activemq:queue:testeJson"/>
+			<unmarshal ref="json" />
+			<bean ref="portoProcessor" method="processar"/>
+  		</route>
+  		
+  	</camelContext>
+  	
+  	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
+    	<property name="deadLetterUri" value="activemq:queue:DLQ"/>
+    	<!-- 
+    	<property name="redeliveryPolicy" ref="myRedeliveryPolicyConfig"/>
+    	 -->
+ 	</bean>
+ <!-- 
+ 	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
+     	<property name="maximumRedeliveries" value="3"/>
+     	<property name="redeliveryDelay" value="5000"/>
+ 	</bean>1.0-EIGPS-Tec Consultant
+ 	
+ 	 -->
+  	
+  	<bean id="portoProcessor" class="br.com.portoconecta.fuse.piloto.jms.PortoProcessor"/>
+	
+	<bean
+        class="br.com.portoconecta.fuse.piloto.jms.PortoJmsRoute" id="portoJmsRoute"/>
+        
     <!-- Configurações do CAMEL -->
     <!-- <camelContext id="porto-conecta-camel-context-piloto" xmlns="http://camel.apache.org/schema/blueprint"> 
 		<route id="_route1"> <from></from> </route> </camelContext> -->
