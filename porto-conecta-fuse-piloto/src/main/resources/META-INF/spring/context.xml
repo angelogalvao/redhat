@@ -90,40 +90,36 @@
 		<routeBuilder ref="portoJmsRoute" />
 		
 		<dataFormats>
+		<!-- 
 			<json id="jsonPessoa" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
+		 -->
 			<json id="json" library="Jackson" allowJmsType="true"/>
 		</dataFormats>
 		
-		<route>
-			<from uri="activemq:queue:testeSpring"/>
-			<unmarshal ref="jsonPessoa" />
-			<bean ref="portoProcessor" method="processar"/>
-  		</route>
-  		
+		
   		<route errorHandlerRef="myDeadLetterErrorHandler">
 			<from uri="activemq:queue:testeJson"/>
 			<unmarshal ref="json" />
 			<bean ref="portoProcessor" method="processar"/>
   		</route>
   		
+  		
+  		
   	</camelContext>
   	
   	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
     	<property name="deadLetterUri" value="activemq:queue:DLQ"/>
-    	<!-- 
     	<property name="redeliveryPolicy" ref="myRedeliveryPolicyConfig"/>
-    	 -->
  	</bean>
- <!-- 
+
  	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
      	<property name="maximumRedeliveries" value="3"/>
-     	<property name="redeliveryDelay" value="5000"/>
+     	<property name="redeliveryDelay" value="100"/>
  	</bean>
- 	
- 	 -->
+
   	
   	<bean id="portoProcessor" class="br.com.portoconecta.fuse.piloto.jms.PortoProcessor"/>
-	
+  		
 	<bean
         class="br.com.portoconecta.fuse.piloto.jms.PortoJmsRoute" id="portoJmsRoute"/>
         

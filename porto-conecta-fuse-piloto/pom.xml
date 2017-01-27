@@ -54,11 +54,6 @@
 			<artifactId>camel-core</artifactId>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-avro</artifactId>
-		</dependency>
-		
 		
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -254,6 +249,7 @@
 							javax.ws.rs.ext,
 							org.hibernate.validator,
 							javax.validation,
+							org.apache.camel,
 							org.apache.cxf.validation,
 							org.apache.cxf.jaxrs.validation,*</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
