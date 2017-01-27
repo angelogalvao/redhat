@@ -1,7 +1,6 @@
 package br.com.portoconecta.fuse.piloto.webservices.rest;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;

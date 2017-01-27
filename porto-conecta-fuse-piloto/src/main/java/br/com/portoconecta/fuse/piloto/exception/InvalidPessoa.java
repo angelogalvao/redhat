@@ -1,7 +1,5 @@
 package br.com.portoconecta.fuse.piloto.exception;
 
-import javax.xml.ws.WebFault;
-
 /**
  * Exceção lançada quando os dados da pessoa esta inválido.
  * @author asouza
