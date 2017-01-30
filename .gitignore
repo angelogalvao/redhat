@@ -57,3 +57,6 @@ local.properties
 
 #Manifest
 MANIFEST.MF
+
+.pmd
+microservice

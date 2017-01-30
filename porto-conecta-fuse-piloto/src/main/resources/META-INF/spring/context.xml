@@ -95,23 +95,26 @@
 		<property name="userName" value="${broker.username}" />
 		<property name="password" value="${broker.password}" />
 	</bean>
+	
+	<!-- Serviço que receberá mensagens do broker -->
+	<bean id="pessoaService" class="br.com.portoconecta.fuse.piloto.messaging.jms.PessoaService"/>
 
 	<!-- Rotas CAMEL -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-		<routeBuilder ref="portoJmsRoute" />
-		
+				
 		<dataFormats>
-		<!-- 
-			<json id="jsonPessoa" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
-		 -->
+			<!-- Form -->
 			<json id="json" library="Jackson" allowJmsType="true"/>
+			
+			<json id="pessoa-unmarshal" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
 		</dataFormats>
 		
 		
   		<route errorHandlerRef="myDeadLetterErrorHandler">
-			<from uri="activemq:queue:testeJson"/>
-			<unmarshal ref="json" />
-			<bean ref="portoProcessor" method="processar"/>
+			<from uri="activemq:queue:pessoa-describe"/>
+			<unmarshal ref="pessoa-unmarshal" />
+			<bean ref="pessoaService" method="describePessoa"/>
+			<log message="Result: ${body}"/>
   		</route>
   		
   		
@@ -128,15 +131,6 @@
      	<property name="redeliveryDelay" value="100"/>
  	</bean>
 
-  	
-  	<bean id="portoProcessor" class="br.com.portoconecta.fuse.piloto.jms.PortoProcessor"/>
   		
-	<bean
-        class="br.com.portoconecta.fuse.piloto.jms.PortoJmsRoute" id="portoJmsRoute"/>
         
-    <!-- Configurações do CAMEL -->
-    <!-- <camelContext id="porto-conecta-camel-context-piloto" xmlns="http://camel.apache.org/schema/blueprint"> 
-		<route id="_route1"> <from></from> </route> </camelContext> -->
-    <!-- </blueprint> -->
-
 </beans>
