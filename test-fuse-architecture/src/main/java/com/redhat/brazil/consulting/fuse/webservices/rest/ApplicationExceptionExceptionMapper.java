@@ -1,4 +1,4 @@
-package br.com.portoconecta.fuse.piloto.webservices.rest;
+package com.redhat.brazil.consulting.fuse.webservices.rest;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -6,18 +6,18 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import br.com.portoconecta.fuse.piloto.exception.PortoException;
+import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
 
 /**
- * Mapeia as exceçoes de negócio da porto.
+ * JAX-RS mapping of Application Exception.
  * @author asouza
  *
  */
 @Provider
-public class PortoConectaExceptionMapper implements ExceptionMapper<PortoException>{
+public class ApplicationExceptionExceptionMapper implements ExceptionMapper<ApplicationException>{
 
 	@Override
-	public Response toResponse(PortoException exception) {
+	public Response toResponse(ApplicationException exception) {
 
 		return Response.status(Status.BAD_REQUEST)
 				.type(MediaType.APPLICATION_JSON)

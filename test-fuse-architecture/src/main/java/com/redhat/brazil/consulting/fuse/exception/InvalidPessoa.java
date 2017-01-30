@@ -5,7 +5,7 @@ package com.redhat.brazil.consulting.fuse.exception;
  * @author asouza
  *
  */
-public class InvalidPessoa extends PortoException {
+public class InvalidPessoa extends ApplicationException {
 
 	private static final long serialVersionUID = -8005280896744683612L;
 

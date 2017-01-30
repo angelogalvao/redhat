@@ -12,7 +12,7 @@ import javax.ws.rs.ext.Provider;
  *
  */
 @Provider
-public class PortoConectaSystemExceptionMapper implements ExceptionMapper<RuntimeException>{
+public class SystemExceptionMapper implements ExceptionMapper<RuntimeException>{
 
 	@Override
 	public Response toResponse(RuntimeException exception) {
