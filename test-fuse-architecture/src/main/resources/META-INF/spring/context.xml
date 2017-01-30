@@ -70,10 +70,10 @@
 
 	<!-- Mapeamento das exceções dos serviços REST -->
 	<bean
-		class="com.redhat.brazil.consulting.fuse.webservices.rest.PortoConectaExceptionMapper"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionExceptionMapper"
 		id="portoExceptionMapper" />
 	<bean
-		class="com.redhat.brazil.consulting.fuse.webservices.rest.PortoConectaSystemExceptionMapper"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
 		id="portoSystemExceptionMapper" />
 
 	<!-- Configurações a feature de Bean Validation - JAX-RS e JAX-WS -->
@@ -114,13 +114,12 @@
 			<json id="json" library="Jackson" allowJmsType="true" />
 
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
-			<json id="pessoa-unmarshall" library="Jackson"
-				unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
+			<json id="pessoa-data-format" library="Jackson" unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
 		</dataFormats>
 
-		<route id="describePessoaRoute" errorHandlerRef="myDeadLetterErrorHandler">
+		<route id="describePessoaRoute" errorHandlerRef="deadLetterErrorHandler">
 			<from uri="activemq:queue:pessoa-describe" />
-			<unmarshal ref="pessoa-unmarshall" />
+			<unmarshal ref="pessoa-data-format" />
 			<bean ref="pessoaService" method="describePessoa" />
 			<log message="Result: ${body}" />
 		</route>
@@ -131,16 +130,6 @@
 			<bean ref="portoProcessor" method="processar" />
 		</route>
 
-		<route id="describePessoaRoute-1" errorHandlerRef="myDeadLetterErrorHandler">
-			<from uri="activemq:queue:pessoa-describe-1" />
-			<to uri="activemq:queue:pessoa-describe-2" />
-		</route>
-
-		<route id="describePessoaRoute-2" errorHandlerRef="myDeadLetterErrorHandler">
-			<from uri="activemq:queue:pessoa-describe-2" />
-			<bean ref="pessoaService" method="describePessoa" />
-			<log message="Result: ${body}" />
-		</route>
 
 		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
 			<log message="Messagem com erro: ${body}" /> </route> -->
@@ -148,24 +137,11 @@
 
 	</camelContext>
 
-	<errorHandler id="deadLetterErrorHandler" type="DeadLetterChannel"
-		deadLetterUri="activemq:queue:DLQ" xmlns="http://camel.apache.org/schema/spring">
+	<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
+	<errorHandler  xmlns="http://camel.apache.org/schema/spring" id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ" useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler" >
 		<redeliveryPolicy maximumRedeliveries="2"
 			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true" />
 	</errorHandler>
-
-
-	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
-		<property name="deadLetterUri" value="activemq:queue:DLQ" />
-		<property name="redeliveryPolicy" ref="myRedeliveryPolicyConfig" />
-		<property name="useOriginalMessage" value="true" />
-		<property name="onPrepareFailure" ref="messageExceptionHandler" />
-	</bean>
-
-	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
-		<property name="maximumRedeliveries" value="3" />
-		<property name="redeliveryDelay" value="100" />
-	</bean>
 
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />

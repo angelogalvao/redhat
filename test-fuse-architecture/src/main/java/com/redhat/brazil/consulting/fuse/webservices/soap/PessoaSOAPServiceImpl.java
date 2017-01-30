@@ -10,7 +10,7 @@ import javax.jws.WebService;
 import com.redhat.brazil.consulting.fuse.exception.InvalidPessoa;
 import com.redhat.brazil.consulting.fuse.model.Pessoa;
 
-@WebService(endpointInterface="br.com.portoconecta.fuse.piloto.webservices.soap.PessoaSOAPService")
+@WebService(endpointInterface="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService")
 public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 
 	@Override	
