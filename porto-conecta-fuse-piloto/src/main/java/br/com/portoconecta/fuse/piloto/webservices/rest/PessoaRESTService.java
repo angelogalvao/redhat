@@ -50,7 +50,7 @@ public class PessoaRESTService {
 	public static void main(String[] args) throws JsonProcessingException {
 		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.YEAR, 1980);
+		calendar.set(Calendar.YEAR, 2009);
 		
 		Pessoa pessoa = new Pessoa("Sergio", calendar.getTime());
 		

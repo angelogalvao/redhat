@@ -100,31 +100,46 @@
 	<bean id="pessoaService" class="br.com.portoconecta.fuse.piloto.messaging.jms.PessoaService"/>
 
 	<!-- Rotas CAMEL -->
-	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring" trace="true">
 				
 		<dataFormats>
-			<!-- Form -->
+			<!-- Formato que pega a informação que esta no header da mensagem -  -->
 			<json id="json" library="Jackson" allowJmsType="true"/>
 			
+			<!-- Formato que pega a informação que esta no header da mensagem -  -->
 			<json id="pessoa-unmarshal" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
 		</dataFormats>
 		
-		
-		
-  		<route errorHandlerRef="myDeadLetterErrorHandler">
+  		<route id="describePessoaRoute" errorHandlerRef="myDeadLetterErrorHandler">
 			<from uri="activemq:queue:pessoa-describe"/>
 			<unmarshal ref="pessoa-unmarshal" />
 			<bean ref="pessoaService" method="describePessoa"/>
 			<log message="Result: ${body}"/>
   		</route>
   		
+  		<route id="describePessoaRoute-1" errorHandlerRef="myDeadLetterErrorHandler">
+			<from uri="activemq:queue:pessoa-describe-1"/>			
+			<to uri="activemq:queue:pessoa-describe-2"/>
+  		</route>  		
   		
+  		<route id="describePessoaRoute-2" errorHandlerRef="myDeadLetterErrorHandler">
+			<from uri="activemq:queue:pessoa-describe-2"/>
+			<bean ref="pessoaService" method="describePessoa"/>
+			<log message="Result: ${body}"/>
+  		</route>
+  		
+  		<!-- <route id="deadLetterQueueHanlderRoute">
+  			<from uri="activemq:queue:DLQ"/>
+  			<log message="Messagem com erro: ${body}" />
+  		</route> -->
   		
   	</camelContext>
   	
   	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
     	<property name="deadLetterUri" value="activemq:queue:DLQ"/>
     	<property name="redeliveryPolicy" ref="myRedeliveryPolicyConfig"/>
+    	<property name="useOriginalMessage" value="true"/>
+    	<property name="onPrepareFailure" ref="messageExceptionHandler"/>
  	</bean>
 
  	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
@@ -132,6 +147,7 @@
      	<property name="redeliveryDelay" value="100"/>
  	</bean>
 
+	<bean id="messageExceptionHandler" class="br.com.portoconecta.fuse.piloto.messaging.jms.MessageExceptionHandler"/>
   		
         
 </beans>

@@ -2,8 +2,6 @@ package br.com.portoconecta.fuse.piloto.messaging.jms;
 
 import java.util.Calendar;
 
-import javax.validation.Valid;
-
 import br.com.portoconecta.fuse.piloto.exception.InvalidPessoa;
 import br.com.portoconecta.fuse.piloto.model.Pessoa;
 

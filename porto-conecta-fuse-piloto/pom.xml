@@ -47,8 +47,7 @@
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-all</artifactId>
 		</dependency>
-		
-	
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
@@ -160,6 +159,7 @@
 			<artifactId>camel-test-blueprint</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
 	</dependencies>
 	<repositories>
 		<repository>
