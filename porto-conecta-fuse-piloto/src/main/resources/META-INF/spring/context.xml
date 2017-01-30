@@ -101,37 +101,42 @@
 
 	<!-- Rotas CAMEL -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-				
+		<routeBuilder ref="portoJmsRoute" />
+		
+  	</camelContext>
+  	
+  	
+  	<camelContext id="camel_JMS" errorHandlerRef="deadLetterErrorHandler"
+  		xmlns="http://camel.apache.org/schema/spring">		
 		<dataFormats>
-			<!-- Form -->
+		<!-- 
+			<json id="jsonPessoa" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
+		 -->
 			<json id="json" library="Jackson" allowJmsType="true"/>
-			
-			<json id="pessoa-unmarshal" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
 		</dataFormats>
 		
 		
-		
-  		<route errorHandlerRef="myDeadLetterErrorHandler">
-			<from uri="activemq:queue:pessoa-describe"/>
-			<unmarshal ref="pessoa-unmarshal" />
-			<bean ref="pessoaService" method="describePessoa"/>
-			<log message="Result: ${body}"/>
+  		<route>
+			<from uri="activemq:queue:testeJson"/>
+			<unmarshal ref="json" />
+			<bean ref="portoProcessor" method="processar"/>
   		</route>
-  		
   		
   		
   	</camelContext>
   	
-  	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
-    	<property name="deadLetterUri" value="activemq:queue:DLQ"/>
-    	<property name="redeliveryPolicy" ref="myRedeliveryPolicyConfig"/>
- 	</bean>
-
- 	<bean id="myRedeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
-     	<property name="maximumRedeliveries" value="3"/>
-     	<property name="redeliveryDelay" value="100"/>
- 	</bean>
-
   		
+	<errorHandler id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ" 
+		xmlns="http://camel.apache.org/schema/spring"   >
+    	<redeliveryPolicy maximumRedeliveries="2" redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"  />
+	</errorHandler>
+	
+  	
+
+  	
+  	<bean id="portoProcessor" class="br.com.portoconecta.fuse.piloto.jms.PortoProcessor"/>
+  		
+	<bean
+        class="br.com.portoconecta.fuse.piloto.jms.PortoJmsRoute" id="portoJmsRoute"/>
         
 </beans>
