@@ -1,7 +1,5 @@
 package br.com.portoconecta.fuse.piloto.exception;
 
-import javax.xml.ws.WebFault;
-
 /**
  * Exceção padrao da Porto.
  * @author asouza

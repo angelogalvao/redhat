@@ -251,17 +251,18 @@
 							javax.validation,
 							org.apache.camel,
 							org.apache.cxf.validation,
-							org.apache.cxf.jaxrs.validation,*</Import-Package>
+							org.apache.cxf.jaxrs.validation,
+							 org.apache.activemq,*</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
 							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service>
 
 					</instructions>
 				</configuration>
 			</plugin>
-		
+<!-- 		
 		</plugins>
 		<pluginManagement>
-		<plugins>
+		<plugins> -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.5.1</version>
@@ -334,6 +335,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		</pluginManagement>
+		
+<!-- 		</pluginManagement> -->
 	</build>
 </project>
