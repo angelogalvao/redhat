@@ -89,6 +89,11 @@
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<routeBuilder ref="portoJmsRoute" />
 		
+  	</camelContext>
+  	
+  	
+  	<camelContext id="camel_JMS" errorHandlerRef="myDeadLetterErrorHandler"
+  		xmlns="http://camel.apache.org/schema/spring">		
 		<dataFormats>
 		<!-- 
 			<json id="jsonPessoa" library="Jackson" unmarshalTypeName="br.com.portoconecta.fuse.piloto.model.Pessoa"/>
@@ -97,14 +102,11 @@
 		</dataFormats>
 		
 		
-  		<route errorHandlerRef="myDeadLetterErrorHandler">
+  		<route>
 			<from uri="activemq:queue:testeJson"/>
 			<unmarshal ref="json" />
 			<bean ref="portoProcessor" method="processar"/>
   		</route>
-  		
-  		
-  		
   	</camelContext>
   	
   	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
