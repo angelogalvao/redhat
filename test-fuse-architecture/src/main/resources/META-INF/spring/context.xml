@@ -145,13 +145,15 @@
 		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
 			<log message="Messagem com erro: ${body}" /> </route> -->
 
-		<errorHandler id="deadLetterErrorHandler" type="DeadLetterChannel"
-			deadLetterUri="activemq:queue:DLQ" xmlns="http://camel.apache.org/schema/spring">
-			<redeliveryPolicy maximumRedeliveries="2"
-				redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true" />
-		</errorHandler>
 
 	</camelContext>
+
+	<errorHandler id="deadLetterErrorHandler" type="DeadLetterChannel"
+		deadLetterUri="activemq:queue:DLQ" xmlns="http://camel.apache.org/schema/spring">
+		<redeliveryPolicy maximumRedeliveries="2"
+			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true" />
+	</errorHandler>
+
 
 	<bean id="myDeadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
 		<property name="deadLetterUri" value="activemq:queue:DLQ" />
