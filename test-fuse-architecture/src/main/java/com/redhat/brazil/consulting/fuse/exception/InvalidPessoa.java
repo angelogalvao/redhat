@@ -1,8 +1,11 @@
 package com.redhat.brazil.consulting.fuse.exception;
 
 /**
- * Exceção lançada quando os dados da pessoa esta inválido.
- * @author asouza
+ * Exceção de negócio lançada quando os dados da pessoa esta inválido.
+ * 
+ * Ela extende a exceção pardão {@link ApplicationException}
+ * 
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 public class InvalidPessoa extends ApplicationException {

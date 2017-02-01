@@ -6,8 +6,9 @@ import com.redhat.brazil.consulting.fuse.exception.InvalidPessoa;
 import com.redhat.brazil.consulting.fuse.model.Pessoa;
 
 /**
+ * Classe de negócio para pessoa.
  * 
- * @author asouza
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 public class PessoaService {

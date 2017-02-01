@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 /**
  * Entidade Pessoa.
  * 
- * @author asouza
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 public class Pessoa implements Serializable {
