@@ -13,14 +13,18 @@
                http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd          
                http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd          
                http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
-               http://www.springframework.org/schema/osgi 
-   	     	   http://www.springframework.org/schema/osgi/spring-osgi.xsd
-        	   http://www.springframework.org/schema/osgi-compendium 
-        	   http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
-        	   http://www.springframework.org/schema/context 
-         	   http://www.springframework.org/schema/context/spring-context.xsd">
+               http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+        	   http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
+        	   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        	   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-
+	<cxf:bus>
+		<cxf:inInterceptors>
+			<ref bean="soapInterceptor" />
+		</cxf:inInterceptors>
+	</cxf:bus>
+	<bean id="soapInterceptor" class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor"/>
+	
 	<!-- Propriedade dinamicas do arquivo de configuraçõo - PersistenseID (Spring) -->
 	<osgix:cm-properties id="com.redhat.brazil.consulting.fuse"
 		persistent-id="com.redhat.brazil.consulting.fuse">
@@ -31,6 +35,8 @@
 	<ctx:property-placeholder properties-ref="com.redhat.brazil.consulting.fuse" />
 
 	<!-- Configurações do CXF: JAX-WS -->
+
+
 	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService"
 		implementor="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceImpl">
 		<jaxws:properties>
@@ -62,6 +68,8 @@
 			<ref bean="commonValidationFeature" />
 		</jaxrs:features>
 	</jaxrs:server>
+
+
 
 	<!-- Definição das implementações dos serviços REST -->
 	<bean
@@ -99,25 +107,24 @@
 	<!-- Serviço que receberá mensagens do broker -->
 	<bean id="pessoaService"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.PessoaService" />
-
+		
 	<!-- Rotas CAMEL -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring"
 		trace="true">
 		<routeBuilder ref="portoJmsRoute" />
 	</camelContext>
 
-
-	<camelContext id="camel_JMS" errorHandlerRef="deadLetterErrorHandler"
-		xmlns="http://camel.apache.org/schema/spring">
+	<camelContext id="camel_JMS" errorHandlerRef="deadLetterErrorHandler" xmlns="http://camel.apache.org/schema/spring">
 		<dataFormats>
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
 			<json id="json" library="Jackson" allowJmsType="true" />
 
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
-			<json id="pessoa-data-format" library="Jackson" unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
+			<json id="pessoa-data-format" library="Jackson"
+				unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
 		</dataFormats>
 
-		<route id="describePessoaRoute" errorHandlerRef="deadLetterErrorHandler">
+		<route id="describePessoaRoute">
 			<from uri="activemq:queue:pessoa-describe" />
 			<unmarshal ref="pessoa-data-format" />
 			<bean ref="pessoaService" method="describePessoa" />
@@ -129,8 +136,7 @@
 			<unmarshal ref="json" />
 			<bean ref="portoProcessor" method="processar" />
 		</route>
-
-
+		
 		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
 			<log message="Messagem com erro: ${body}" /> </route> -->
 
@@ -138,19 +144,17 @@
 	</camelContext>
 
 	<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
-	<errorHandler  xmlns="http://camel.apache.org/schema/spring" id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ" useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler" >
+	<errorHandler xmlns="http://camel.apache.org/schema/spring"
+		id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
+		useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
 		<redeliveryPolicy maximumRedeliveries="2"
-			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true" />
+			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true" retryAttemptedLogLevel="DEBUG"/>
 	</errorHandler>
 
-	<bean id="messageExceptionHandler"
-		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
-
-
-
+	<bean id="messageExceptionHandler" class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
+		
 	<bean id="portoProcessor" class="com.redhat.brazil.consulting.fuse.jms.PortoProcessor" />
 
-	<bean class="com.redhat.brazil.consulting.fuse.jms.PortoJmsRoute"
-		id="portoJmsRoute" />
+	<bean class="com.redhat.brazil.consulting.fuse.jms.PortoJmsRoute" id="portoJmsRoute" />
 
 </beans>

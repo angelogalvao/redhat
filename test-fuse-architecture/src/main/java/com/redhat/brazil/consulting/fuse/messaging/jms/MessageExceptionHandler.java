@@ -8,6 +8,12 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
 
+/**
+ * Handler de exceções de mensagens trafegadas no broker.
+ * 
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
+ *
+ */
 public class MessageExceptionHandler implements Processor {
 
 	@Override

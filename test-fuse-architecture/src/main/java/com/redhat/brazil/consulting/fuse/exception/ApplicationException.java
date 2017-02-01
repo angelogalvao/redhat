@@ -1,8 +1,9 @@
 package com.redhat.brazil.consulting.fuse.exception;
 
 /**
- * Exceção padrao da Porto.
- * @author asouza
+ * Exceção de negócio padrão.
+ * 
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 

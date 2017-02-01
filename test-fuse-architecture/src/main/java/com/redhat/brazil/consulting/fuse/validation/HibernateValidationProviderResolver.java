@@ -12,10 +12,11 @@ import org.hibernate.validator.HibernateValidator;
  * Habilita a implementação do Bean Validation para o Hibernate Validator.
  * 
  * Essa classe é necessária por o Fuse rodar em um container OSGI (Apache Karaf) e não um container Java EE.
- * @author asouza
+ * 
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
-public class HibernateValidationProviderResolver implements ValidationProviderResolver{
+public class HibernateValidationProviderResolver implements ValidationProviderResolver {
 
 	@Override
 	public List<ValidationProvider<?>> getValidationProviders() {

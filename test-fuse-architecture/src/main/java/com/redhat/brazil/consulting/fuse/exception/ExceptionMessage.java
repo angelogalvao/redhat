@@ -4,9 +4,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Modelo de exceção.
+ * Modelo padrão de exceção, que contêm um código e a mensagem.
  * 
- * @author asouza
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 @XmlRootElement

@@ -10,6 +10,12 @@ import javax.jws.WebService;
 import com.redhat.brazil.consulting.fuse.exception.InvalidPessoa;
 import com.redhat.brazil.consulting.fuse.model.Pessoa;
 
+/**
+ * Implementação do endpoint SOAP.
+ * 
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
+ *
+ */
 @WebService(endpointInterface="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService")
 public class PessoaSOAPServiceImpl implements PessoaSOAPService {
 

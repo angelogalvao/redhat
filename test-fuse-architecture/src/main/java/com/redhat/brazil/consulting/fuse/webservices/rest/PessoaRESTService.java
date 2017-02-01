@@ -2,6 +2,7 @@ package com.redhat.brazil.consulting.fuse.webservices.rest;
 
 import java.util.Calendar;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -19,6 +20,11 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
+/**
+ * Endpoint REST.
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
+ *
+ */
 @Path("/pessoa")
 @Api(value = "/pessoa", description = "Operações da Entidade Pessoa.")
 public class PessoaRESTService {
@@ -29,8 +35,9 @@ public class PessoaRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Descreve as propriedades da pessoa", notes = "Mais dadodos abaixo", response = String.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Pessoa inválida")            
+            @ApiResponse(code = 400, message = "Pessoa Inválida.")            
     })	
+	@RolesAllowed("role-describe-pessoa")
 	public String describePessoa(@Valid Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();

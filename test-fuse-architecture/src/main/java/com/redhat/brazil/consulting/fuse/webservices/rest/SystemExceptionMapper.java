@@ -8,7 +8,7 @@ import javax.ws.rs.ext.Provider;
 
 /**
  * Mapeia exceçao de sistema unchecked.
- * @author asouza
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 @Provider

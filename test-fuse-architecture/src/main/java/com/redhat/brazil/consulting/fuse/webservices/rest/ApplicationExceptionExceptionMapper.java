@@ -10,7 +10,7 @@ import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
 
 /**
  * JAX-RS mapping of Application Exception.
- * @author asouza
+ * @author <a href="mailto:asouza@redhat.com">Ângelo Galvão</a>
  *
  */
 @Provider

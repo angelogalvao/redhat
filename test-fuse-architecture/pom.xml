@@ -2,6 +2,7 @@
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.brazil.consulting</groupId>
 	<artifactId>test-fuse-architecture</artifactId>
@@ -22,7 +23,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jboss.fuse.bom.version>6.3.0.redhat-187</jboss.fuse.bom.version>
 		<cxf-version>3.1.5.redhat-630187</cxf-version>
-		    <fabric.version>1.2.0.redhat-630187</fabric.version>
+		   <fabric.version>1.2.0.redhat-630187</fabric.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencyManagement>
@@ -63,6 +64,13 @@
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-blueprint</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-cxf</artifactId>
+		</dependency>
+		
+		
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
@@ -226,19 +234,15 @@
 						<Bundle-SymbolicName>test-fuse-architecture</Bundle-SymbolicName>
 						<Bundle-Name>Fuse Architecture - Red Hat Consulting - Bundle</Bundle-Name>
 
-						<Import-Package>javax.jws;version="[0,3)",
+						<Import-Package>
+							javax.jws;version="[0,3)",
 							javax.wsdl,
-							javax.xml.namespace,
-							javax.xml.ws,
-							org.apache.cxf.helpers,
+							javax.xml,
+							javax.xml.soap,							
 							org.osgi.service.blueprint,
-							io.fabric8.cxf.endpoint,
 							org.apache.cxf.transport.http,							
 							javax.ws.rs,
-							javax.ws.rs.core,
-							javax.xml.bind.annotation,
-							com.wordnik.swagger.jaxrs.config,
-							com.wordnik.swagger.jaxrs.listing,
+							com.wordnik.swagger.jaxrs,
 							com.wordnik.swagger.annotations,
 							io.fabric8.cxf,
 							javax.annotation;version="[1.1.0,2.0.0)",
@@ -246,23 +250,21 @@
 							com.fasterxml.jackson.core,
 							com.fasterxml.jackson.databind,
 							com.fasterxml.jackson.jaxrs.json,
-							javax.ws.rs.ext,
 							org.hibernate.validator,
 							javax.validation,
 							org.apache.camel,
-							org.apache.cxf.validation,
-							org.apache.cxf.jaxrs.validation,
-							 org.apache.activemq,*</Import-Package>
+							org.apache.cxf,
+							org.apache.cxf.bus.spring,
+							org.apache.activemq,
+							*
+							</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
 							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service>
 
 					</instructions>
 				</configuration>
 			</plugin>
-<!-- 		
-		</plugins>
-		<pluginManagement>
-		<plugins> -->
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.5.1</version>
@@ -336,6 +338,5 @@
 			</plugin>
 		</plugins>
 		
-<!-- 		</pluginManagement> -->
 	</build>
 </project>
