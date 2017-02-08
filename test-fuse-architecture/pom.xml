@@ -23,7 +23,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jboss.fuse.bom.version>6.3.0.redhat-187</jboss.fuse.bom.version>
 		<cxf-version>3.1.5.redhat-630187</cxf-version>
-		   <fabric.version>1.2.0.redhat-630187</fabric.version>
+		<fabric.version>1.2.0.redhat-630187</fabric.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencyManagement>
@@ -255,6 +255,7 @@
 							org.apache.camel,
 							org.apache.cxf,
 							org.apache.cxf.bus.spring,
+							org.apache.cxf.headers,
 							org.apache.activemq,
 							*
 							</Import-Package>

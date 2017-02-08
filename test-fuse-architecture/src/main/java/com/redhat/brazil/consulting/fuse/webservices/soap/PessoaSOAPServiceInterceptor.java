@@ -1,14 +1,13 @@
 package com.redhat.brazil.consulting.fuse.webservices.soap;
 
 import java.util.List;
-import java.util.Map;
+
+import javax.xml.namespace.QName;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.interceptor.Fault;
-import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.Phase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,27 +22,32 @@ public class PessoaSOAPServiceInterceptor extends AbstractSoapInterceptor {
 	private Logger log = LoggerFactory.getLogger(PessoaSOAPServiceInterceptor.class);
 	
 	public PessoaSOAPServiceInterceptor() {
-		super(Phase.READ);
+		super(Phase.UNMARSHAL);
 	}
 
 	@Override
 	public void handleMessage(SoapMessage message) throws Fault {
-		log.info("Exceutando a interceptação da mensagem");
+		log.info("Exceutando a interceptação da mensagem: ");
 
-//		Map<String, List<String>> headers = CastUtils.cast((Map)message.get(Message.PROTOCOL_HEADERS));
-		
 		List<Header> headers = message.getHeaders();
-
-//		 List<String> callerIp = headers.get("callerIp");
-//		 
-//		 if(callerIp == null || callerIp.isEmpty()) {
-//			 log.info("Header vazio");
-//		 } else {
-//			 log.info("Header preenchido");
-//		 }
+		
+		Header header = null;
+		for (Header _header : headers) {
+			QName name = _header.getName();
+			
+			if( name.getLocalPart().equals("callerIp") ){
+				header = _header;
+				break;
+			}
+				
+		}
+		
+		if( header == null ) {
+			log.info("A mensagem SOAP não possui o header callerIp");
+			
+			throw new Fault("A mensagem SOAP não possui o header callerIp",  java.util.logging.Logger.getLogger(this.getClass().getName()));
+		} 
 		
 	}
-
-
 
 }

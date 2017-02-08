@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JBoss, Home of Professional Open Source Copyright 2014, Red Hat, Inc. 
+	and/or its affiliates, and individual contributors by the @authors tag. See 
+	the copyright.txt in the distribution for a full listing of individual contributors. 
+	Licensed under the Apache License, Version 2.0 (the "License"); you may not 
+	use this file except in compliance with the License. You may obtain a copy 
+	of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+<!-- This is the OSGi Blueprint XML file defining the Camel context and routes. 
+	Because the file is in the OSGI-INF/blueprint directory inside our JAR, it 
+	will be automatically activated as soon as the bundle is installed. The root 
+	element for any OSGi Blueprint file is 'blueprint' - you also see the namespace 
+	definitions for both the Blueprint and the Camel namespaces. -->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+	xmlns:camel-cxf="http://camel.apache.org/schema/cxf" 
+	xmlns:cxf="http://cxf.apache.org/blueprint/core"
+	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" 
+	xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd                                          
+						http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd                                          
+						http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd          
+						http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd">
+
+	<!-- Configurações do CXF: JAX-WS Bus -->
+	<cxf:bus>
+		<cxf:inInterceptors>
+			<ref component-id="soapInterceptor" />
+		</cxf:inInterceptors>
+	</cxf:bus>
+	<bean id="soapInterceptor" class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
+
+	<!-- Configurações do CXF: Endpoints JAX-WS -->
+	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService"
+		implementor="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceImpl">
+		<jaxws:properties>
+			<entry key="schema-validation-enabled" value="BOTH" />
+		</jaxws:properties>
+		<jaxws:features>
+			<ref component-id="commonValidationFeature" />
+		</jaxws:features>
+	</jaxws:endpoint>
+	<!-- Configurações do CXF: JAX-RS -->
+	<jaxrs:server address="/rest" id="porto-conecta-piloto-jaxrs-server">
+		<jaxrs:serviceBeans>
+			<ref component-id="pessoaRESTService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
+			<ref component-id="beanValidationExceptionMapper" />
+			<ref component-id="applicationExceptionMapper" />
+			<ref component-id="systemExceptionMapper" />
+		</jaxrs:providers>
+		<jaxrs:features>
+			<bean class="io.fabric8.cxf.endpoint.SwaggerFeature">
+				<property name="title" value="Porto Conecta - Piloto - JAXRS Service" />
+				<property name="description" value="Exemplo de serviço REST" />
+				<property name="version" value="${project.version}" />
+			</bean>
+			<ref component-id="commonValidationFeature" />
+		</jaxrs:features>
+	</jaxrs:server>
+	<!-- Definição das implementações dos serviços REST -->
+	<bean
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService"
+		id="pessoaRESTService" />
+
+	<!-- Mapeamento das exceções dos serviços REST -->
+	<bean
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionExceptionMapper"
+		id="applicationExceptionMapper" />
+	<bean
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
+		id="systemExceptionMapper" />
+
+	<!-- Configurações a feature de Bean Validation - JAX-RS e JAX-WS -->
+	<bean class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper"
+		id="beanValidationExceptionMapper" />
+	<bean class="org.apache.cxf.validation.BeanValidationFeature" id="commonValidationFeature">
+		<property name="provider" ref="beanValidationProvider" />
+	</bean>
+	<bean class="org.apache.cxf.validation.BeanValidationProvider" id="beanValidationProvider">
+		<argument ref="validationProviderResolver" />
+	</bean>
+	<bean
+		class="com.redhat.brazil.consulting.fuse.validation.HibernateValidationProviderResolver"
+		id="validationProviderResolver" />
+
+	<!-- Propriedade dinamicas do arquivo de configuraçõo - PersistenseID (Blueprint) -->
+	<cm:property-placeholder id="com.redhat.brazil.consulting.fuse"
+		persistent-id="com.redhat.brazil.consulting.fuse">
+		<cm:default-properties>
+			<cm:property name="broker.url" value="vm://amq?broker.persistent=false" />
+			<cm:property name="broker.username" value="" />
+			<cm:property name="broker.password" value="" />
+		</cm:default-properties>
+	</cm:property-placeholder>
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="${broker.url}" />
+		<property name="userName" value="${broker.username}" />
+		<property name="password" value="${broker.password}" />
+	</bean>
+
+	<!-- Serviço que receberá mensagens do broker -->
+	<bean id="pessoaService"
+		class="com.redhat.brazil.consulting.fuse.messaging.jms.PessoaService" />
+
+	<!-- Rotas CAMEL -->
+	<camelContext id="test-fuse-architecture-context" errorHandlerRef="deadLetterErrorHandler" 
+		xmlns="http://camel.apache.org/schema/blueprint">
+		
+		
+		<dataFormats>
+			<!-- Formato que pega a informação que esta no header da mensagem - -->
+			<json id="pessoa-data-format" library="Jackson"
+				unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
+		</dataFormats>
+				
+
+		<route id="describe-pessoa-route">
+			<from uri="activemq:queue:pessoa-describe" />
+			<unmarshal ref="pessoa-data-format" />
+			<bean ref="pessoaService" method="describePessoa" />
+			<log message="Result: ${body}" />
+		</route>
+<!-- 		
+		<route id="call-remote-soap-service">
+			<from uri=""/>
+		</route>
+		
+		 -->
+
+		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
+			<log message="Messagem com erro: ${body}" /> </route> -->
+
+
+	</camelContext>
+
+	<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
+	<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
+		id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
+		useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
+		<redeliveryPolicy maximumRedeliveries="2"
+			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
+			retryAttemptedLogLevel="DEBUG" />
+	</errorHandler>
+
+	<bean id="messageExceptionHandler"
+		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
+
+</blueprint>
+

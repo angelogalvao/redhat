@@ -56,9 +56,9 @@ public class PessoaRESTService {
 	public static void main(String[] args) throws JsonProcessingException {
 		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.YEAR, 2009);
+		calendar.set(Calendar.YEAR, 1990);
 		
-		Pessoa pessoa = new Pessoa("Sergio", calendar.getTime());
+		Pessoa pessoa = new Pessoa("Teste", calendar.getTime());
 		
 		ObjectMapper mapper = new ObjectMapper();
 		

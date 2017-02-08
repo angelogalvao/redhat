@@ -114,7 +114,7 @@
 		<routeBuilder ref="portoJmsRoute" />
 	</camelContext>
 
-	<camelContext id="camel_JMS" errorHandlerRef="deadLetterErrorHandler" xmlns="http://camel.apache.org/schema/spring">
+	<camelContext id="camel_JMS" errorHandlerRef="deadLetterErrorHandler"  xmlns="http://camel.apache.org/schema/blueprint" >
 		<dataFormats>
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
 			<json id="json" library="Jackson" allowJmsType="true" />
