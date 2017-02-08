@@ -3,6 +3,8 @@ package com.redhat.brazil.consulting.fuse.messaging.jms;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
 
@@ -20,6 +22,10 @@ public class MessageExceptionHandler implements Processor {
 		Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
 		String originalDestination = ((ActiveMQQueue) exchange.getIn().getHeader("JMSDestination")).getQualifiedName();
+		
+		Logger logger = LoggerFactory.getLogger("AMQ."+originalDestination);
+		Object body = exchange.getIn().getBody();
+		
 
 		if( cause instanceof ApplicationException ){
 			ApplicationException applicationException = (ApplicationException) cause;
@@ -27,7 +33,13 @@ public class MessageExceptionHandler implements Processor {
 			exchange.getIn().setHeader("StatusCode", applicationException.getExceptionMessage().getStatusCode());
 			exchange.getIn().setHeader("Message", applicationException.getExceptionMessage().getMessage());
 			exchange.getIn().setHeader("ExceptionType", cause.getClass().getName());
+			
+			logger.debug("JMS "+ body, cause);
 		} 
+		else {
+			
+			logger.error("JMS "+ body, cause);
+		}
 		
 		exchange.getIn().setHeader("Error", cause.getMessage());		
 		exchange.getIn().setHeader("OriginalDestination", originalDestination);
