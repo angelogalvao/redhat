@@ -2,7 +2,7 @@
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.brazil.consulting</groupId>
 	<artifactId>test-fuse-architecture</artifactId>
@@ -38,12 +38,12 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jms</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-all</artifactId>
@@ -53,24 +53,34 @@
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
 		</dependency>
-		
-		
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-xmljson</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>xom</groupId>
+			<artifactId>xom</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jackson</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-blueprint</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-cxf</artifactId>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
@@ -167,7 +177,7 @@
 			<artifactId>camel-test-blueprint</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 	<repositories>
 		<repository>
@@ -238,15 +248,15 @@
 							javax.jws;version="[0,3)",
 							javax.wsdl,
 							javax.xml,
-							javax.xml.soap,							
+							javax.xml.soap,
 							org.osgi.service.blueprint,
-							org.apache.cxf.transport.http,							
+							org.apache.cxf.transport.http,
 							javax.ws.rs,
 							com.wordnik.swagger.jaxrs,
 							com.wordnik.swagger.annotations,
 							io.fabric8.cxf,
 							javax.annotation;version="[1.1.0,2.0.0)",
-							com.fasterxml.jackson.annotation, 
+							com.fasterxml.jackson.annotation,
 							com.fasterxml.jackson.core,
 							com.fasterxml.jackson.databind,
 							com.fasterxml.jackson.jaxrs.json,
@@ -257,8 +267,9 @@
 							org.apache.cxf.bus.spring,
 							org.apache.cxf.headers,
 							org.apache.activemq,
+							nu.xom,
 							*
-							</Import-Package>
+						</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
 							osgi.service.blueprint.namespace=http://cxf.apache.org/transports/http/configuration</Import-Service>
 
@@ -338,6 +349,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		
+
 	</build>
 </project>

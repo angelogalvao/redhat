@@ -15,12 +15,10 @@
 	element for any OSGi Blueprint file is 'blueprint' - you also see the namespace 
 	definitions for both the Blueprint and the Camel namespaces. -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-	xmlns:camel-cxf="http://camel.apache.org/schema/cxf" 
-	xmlns:cxf="http://cxf.apache.org/blueprint/core"
-	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" 
-	xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+	xmlns:camel-cxf="http://camel.apache.org/schema/cxf" xmlns:cxf="http://cxf.apache.org/blueprint/core"
+	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
 	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
-    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+	xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd                                          
 						http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd                                          
@@ -33,7 +31,8 @@
 			<ref component-id="soapInterceptor" />
 		</cxf:inInterceptors>
 	</cxf:bus>
-	<bean id="soapInterceptor" class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
+	<bean id="soapInterceptor"
+		class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
 
 	<!-- Configurações do CXF: Endpoints JAX-WS -->
 	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService"
@@ -112,16 +111,27 @@
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.PessoaService" />
 
 	<!-- Rotas CAMEL -->
-	<camelContext id="test-fuse-architecture-context" errorHandlerRef="deadLetterErrorHandler" 
-		xmlns="http://camel.apache.org/schema/blueprint">
-		
-		
+	<camelContext id="test-fuse-architecture-context"
+		errorHandlerRef="deadLetterErrorHandler" xmlns="http://camel.apache.org/schema/blueprint">
+
+		<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
+		<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
+			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
+			useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
+			<redeliveryPolicy maximumRedeliveries="2"
+				redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
+				retryAttemptedLogLevel="DEBUG" />
+		</errorHandler>
+
+
 		<dataFormats>
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
 			<json id="pessoa-data-format" library="Jackson"
 				unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
+
+			<xmljson id="xmljson-data-format" />
 		</dataFormats>
-				
+
 
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
@@ -129,12 +139,25 @@
 			<bean ref="pessoaService" method="describePessoa" />
 			<log message="Result: ${body}" />
 		</route>
-<!-- 		
-		<route id="call-remote-soap-service">
-			<from uri=""/>
+
+		<route id="convert-json-to-xml">
+			<from uri="activemq:queue:json-to-xml" />
+			<log message="Original: ${body}" />
+			<unmarshal ref="xmljson-data-format" />
+			<log message="Converted: ${body}" />
+			<marshal ref="xmljson-data-format" />
+			<log message="Converted again: ${body}" />
 		</route>
 		
-		 -->
+		<route id="convert-xml-to-json">
+			<from uri="activemq:queue:json-to-xml" />
+			<log message="Original: ${body}" />
+			<marshal ref="xmljson-data-format" />
+			<log message="Converted: ${body}" />
+			<unmarshal ref="xmljson-data-format" />
+			<log message="Converted again: ${body}" />
+		</route>
+		<!-- <route id="call-remote-soap-service"> <from uri=""/> </route> -->
 
 		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
 			<log message="Messagem com erro: ${body}" /> </route> -->
@@ -142,14 +165,7 @@
 
 	</camelContext>
 
-	<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
-	<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
-		id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
-		useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
-		<redeliveryPolicy maximumRedeliveries="2"
-			redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
-			retryAttemptedLogLevel="DEBUG" />
-	</errorHandler>
+
 
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
