@@ -144,6 +144,15 @@
 		</onException>
 		
 		 -->
+		 
+		<route id="testeMensagemAgendadaConversao">
+			<from uri="activemq:testeMensagemAgendadaConversaoIn" />
+			<log message="Agendando: ${body}" />
+			<setHeader headerName="AMQ_SCHEDULED_DELAY">
+				<constant>30000</constant>
+			</setHeader>
+			<to uri="activemq:testeMensagemAgendadaConversaoOut?timeToLive=60000" />
+		</route>
 
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
