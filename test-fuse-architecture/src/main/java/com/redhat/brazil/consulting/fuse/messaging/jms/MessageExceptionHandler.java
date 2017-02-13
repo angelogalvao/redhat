@@ -43,7 +43,12 @@ public class MessageExceptionHandler implements Processor {
 		
 		exchange.getIn().setHeader("Error", cause.getMessage());		
 		exchange.getIn().setHeader("OriginalDestination", originalDestination);
-
+		
+		originalDestination = originalDestination.replaceAll("queue://", "");
+		exchange.getContext().createProducerTemplate().send("activemq:queue:DLQ.exception."+originalDestination, exchange);
+				
+		
+		exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE); 
 	}
 
 }
