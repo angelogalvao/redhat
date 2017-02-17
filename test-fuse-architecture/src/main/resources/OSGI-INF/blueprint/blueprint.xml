@@ -115,7 +115,7 @@
 		
 		<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
 		<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
-			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
+			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="mock:dlq" 
 			useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
 			<redeliveryPolicy maximumRedeliveries="2"
 				redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
@@ -131,6 +131,27 @@
 			<xmljson id="xmljson-data-format" />
 		</dataFormats>
 
+<!-- 
+		<onException useOriginalMessage="true" >
+			<exception>com.fasterxml.jackson.core.JsonParseException</exception>
+			<to uri="activemq:queue:exception-JsonParseException"  />
+		</onException>
+		
+		<onException useOriginalMessage="true" >
+			<exception>com.redhat.brazil.consulting.fuse.exception.InvalidPessoa</exception>
+			<to uri="activemq:queue:exception-InvalidPessoa" />
+		</onException>
+		
+		 -->
+		 
+		<route id="testeMensagemAgendadaConversao">
+			<from uri="activemq:testeMensagemAgendadaConversaoIn" />
+			<log message="Agendando: ${body}" />
+			<setHeader headerName="AMQ_SCHEDULED_DELAY">
+				<constant>30000</constant>
+			</setHeader>
+			<to uri="activemq:testeMensagemAgendadaConversaoOut?timeToLive=60000" />
+		</route>
 
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
