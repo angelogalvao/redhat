@@ -1,5 +1,7 @@
 package com.redhat.brazil.consulting.fuse.messaging.jms;
 
+import javax.validation.ValidationException;
+
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -35,8 +37,9 @@ public class MessageExceptionHandler implements Processor {
 			exchange.getIn().setHeader("ExceptionType", cause.getClass().getName());
 			
 			logger.debug("JMS "+ body, cause);
-		} 
-		else {
+		} else if(cause instanceof ValidationException ) {
+			// TODO extract the message
+		} else {
 			
 			logger.error("JMS "+ body, cause);
 		}

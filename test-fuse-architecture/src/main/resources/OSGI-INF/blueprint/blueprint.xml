@@ -23,18 +23,13 @@
 	xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd                                          
 						http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd                                          
 						http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd          
-						http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd">
-
-	<!-- Configurações do CXF: JAX-WS Bus -->
-	<cxf:bus>
-		<cxf:inInterceptors>
-			<ref component-id="soapInterceptor" />
-		</cxf:inInterceptors>
-	</cxf:bus>
-	<bean id="soapInterceptor"
-		class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
+						http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+						http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/blueprint/jaxws.xsd">
 
 	<!-- Configurações do CXF: Endpoints JAX-WS -->
+	<bean id="soapInterceptor"
+		  class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
+		  
 	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService"
 		implementor="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceImpl">
 		<jaxws:properties>
@@ -43,7 +38,12 @@
 		<jaxws:features>
 			<ref component-id="commonValidationFeature" />
 		</jaxws:features>
+		
+		<jaxws:inInterceptors>
+			<ref component-id="soapInterceptor" />
+		</jaxws:inInterceptors>
 	</jaxws:endpoint>
+	
 	<!-- Configurações do CXF: JAX-RS -->
 	<jaxrs:server address="/rest" id="porto-conecta-piloto-jaxrs-server">
 		<jaxrs:serviceBeans>
@@ -64,10 +64,9 @@
 			<ref component-id="commonValidationFeature" />
 		</jaxrs:features>
 	</jaxrs:server>
+	
 	<!-- Definição das implementações dos serviços REST -->
-	<bean
-		class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService"
-		id="pessoaRESTService" />
+	<bean id="pessoaRESTService" class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService" />
 
 	<!-- Mapeamento das exceções dos serviços REST -->
 	<bean
@@ -113,7 +112,7 @@
 	<!-- Rotas CAMEL -->
 	<camelContext id="test-fuse-architecture-context"
 		errorHandlerRef="deadLetterErrorHandler" xmlns="http://camel.apache.org/schema/blueprint">
-
+		
 		<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
 		<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
 			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="activemq:queue:DLQ"
@@ -122,7 +121,7 @@
 				redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
 				retryAttemptedLogLevel="DEBUG" />
 		</errorHandler>
-
+		
 
 		<dataFormats>
 			<!-- Formato que pega a informação que esta no header da mensagem - -->
@@ -136,6 +135,7 @@
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
 			<unmarshal ref="pessoa-data-format" />
+			<to uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver"/>
 			<bean ref="pessoaService" method="describePessoa" />
 			<log message="Result: ${body}" />
 		</route>
@@ -150,13 +150,15 @@
 		</route>
 		
 		<route id="convert-xml-to-json">
-			<from uri="activemq:queue:json-to-xml" />
+			<from uri="activemq:queue:xml-to-json" />
 			<log message="Original: ${body}" />
 			<marshal ref="xmljson-data-format" />
 			<log message="Converted: ${body}" />
 			<unmarshal ref="xmljson-data-format" />
 			<log message="Converted again: ${body}" />
 		</route>
+		
+		
 		<!-- <route id="call-remote-soap-service"> <from uri=""/> </route> -->
 
 		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
@@ -165,8 +167,7 @@
 
 	</camelContext>
 
-
-
+	<!-- Handler de erro da mensagem -->
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
 

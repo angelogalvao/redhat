@@ -35,9 +35,9 @@ public class PessoaRESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Descreve as propriedades da pessoa", notes = "Mais dadodos abaixo", response = String.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Pessoa Inválida.")            
-    })	
-	@RolesAllowed("role-describe-pessoa")
+            @ApiResponse(code = 400, message = "Pessoa Inválida."),
+            @ApiResponse(code = 500, message = "Pessoa Inválida.")
+    })
 	public String describePessoa(@Valid Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
 		
 		Calendar now		 = Calendar.getInstance();
