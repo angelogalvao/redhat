@@ -80,6 +80,10 @@
 			<artifactId>camel-cxf</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-bean-validator</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
@@ -335,7 +339,7 @@
 						</goals>
 						<configuration>
 							<classResourceNames>
-								<classResourceName>com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService</classResourceName>
+								<classResourceName>com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTServiceImpl</classResourceName>
 							</classResourceNames>
 							<attachSwagger>false</attachSwagger>
 						</configuration>
