@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        
+    						http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+    						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder location="file:${artemis.instance}/etc/bridge.properties"/>	
+
+	<!--Carrega as propriedades -->
+ 	<bean id="jasypt" class="org.apache.camel.component.jasypt.JasyptPropertiesParser">
+		<property name="algorithm" value="PBEWithMD5AndDES" />
+	</bean>
+
+	<!-- Configuração de acessos aos brokers do JBoss A-MQ (LOCAL) -->
+	<bean id="amqConnectionFactory"
+		class="org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory">
+		<constructor-arg value="${amq7.connection.url}" />
+		<constructor-arg value="${amq7.connection.user}" />
+		<constructor-arg value="${amq7.connection.password}" />
+	</bean>
+	<bean id="artemisCachingConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="amqConnectionFactory" />
+		<property name="sessionCacheSize" value="20" />
+		<property name="reconnectOnException" value="true" />
+	</bean>
+	<bean id="amq7" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="connectionFactory" ref="artemisCachingConnectionFactory" />
+		<property name="transacted" value="true" />
+		<property name="transactionManager" ref="jmsTransactionManager" />
+	</bean>
+	<bean id="jmsTransactionManager"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="artemisCachingConnectionFactory" />
+	</bean>
+
+
+	<bean id="amqConnectionFactory2"
+		class="org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory">
+		<constructor-arg value="tcp://localhost:61616" />
+		<constructor-arg value="test" />
+		<constructor-arg value="test" />
+	</bean>
+	<bean id="artemisCachingConnectionFactory2"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="amqConnectionFactory2" />
+		<property name="sessionCacheSize" value="20" />
+		<property name="reconnectOnException" value="true" />
+	</bean>
+	<bean id="amq72" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="connectionFactory" ref="artemisCachingConnectionFactory2" />
+		<property name="transacted" value="true" />
+		<property name="transactionManager" ref="jmsTransactionManager72" />
+	</bean>
+	<bean id="jmsTransactionManager72"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="artemisCachingConnectionFactory2" />
+	</bean>
+
+	<!-- Configuração de acesso aos brokers do Websphere MQ -->
+	<bean id="wcfIMS" class="com.ibm.mq.jms.MQConnectionFactory">
+		<property name="transportType" value="1" />
+		<property name="hostName"      value="${wmq.connection.host}" />
+		<property name="port"          value="${wmq.connection.port}" />
+		<property name="queueManager"  value="${wmq.connection.queueManager}" />		
+		<property name="channel"       value="${wmq.connection.channel}" />
+		
+		<!-- <property name="channel" value="C.SVR.POCARQ.IMS.1" /> -->
+	</bean>
+
+	<bean id="myProxyConnectionFactoryIMS"
+		class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter">
+		<property name="targetConnectionFactory" ref="wcfIMS" />
+		<!-- <property name="username" value="STBPMEP" /> <property name="password" 
+			value="${wmq.pwd}" /> -->
+		<property name="username" value="${wmq.connection.user}" />
+		<property name="password" value="${wmq.connection.password}" />
+	</bean>
+
+	<bean id="websphereIMSCachingConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="wcfIMS" />
+		<property name="sessionCacheSize" value="40" />
+	</bean>
+
+	<bean id="websphereConfigIMS" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="websphereIMSCachingConnectionFactory" />
+		<property name="concurrentConsumers" value="10" />
+		<property name="transacted" value="true" />
+	</bean>
+	
+	<bean id="websphereTransactionManager"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="websphereIMSCachingConnectionFactory" />
+	</bean>
+
+	<bean id="wmq" class="org.apache.camel.component.jms.JmsComponent">
+		<property name="configuration" ref="websphereConfigIMS" />
+		<property name="transacted" value="true" />
+		<property name="transactionManager" ref="websphereTransactionManager" />
+	</bean>
+
+	<!-- Objetos do projeto -->
+	<bean id="bridgesRepository" class="com.redhat.consulting.BridgesRepository" />
+
+	<bean id="dynamicRoutesProcessor" class="com.redhat.consulting.DynamicRoutesProcessor">
+		<constructor-arg value="${bridge.redeliveryDelay}"/>
+	</bean>
+
+	<bean id="loadBridgesRouteBuilder" class="com.redhat.consulting.LoadBridgesRouteBuilder" />
+
+	<!-- Rota Camel que executa a bridge entre o A-MQ e o IBM MQSeries -->
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+
+		<routeBuilder ref="loadBridgesRouteBuilder" />
+
+		<dataFormats>
+			<jaxb id="jaxb" contextPath="com.redhat.consulting" />
+		</dataFormats>
+		
+		<route id="check-liveness">
+			<from uri="timer:livenessCheckerTimer?delay=0&amp;period=1000" />
+			<to uri="netty4-http:http://localhost:8161/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,serviceType=Broker/Backup" />
+			<transform>
+				<jsonpath>$.value.*.Backup</jsonpath>
+			</transform>
+			<setProperty propertyName="backup">
+				<simple>${body}</simple>
+			</setProperty>
+			<to uri="bean:bridgesRepository?method=getBridgesList" />
+
+			<split streaming="true">
+				<simple>${body}</simple>
+				<unmarshal ref="jaxb" />
+				<setProperty propertyName="routeName">
+					<simple>${body.id}</simple>
+				</setProperty>				
+				<toD uri="controlbus:route:language?action=status&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />				
+				<setProperty propertyName="routeStatus">
+					<simple>${body}</simple>
+				</setProperty>
+				<choice>
+					<when>
+						<simple>${exchangeProperty.backup} == '[true]' and ${exchangeProperty.routeStatus} != 'Stopped'</simple>
+						<toD
+							uri="controlbus:route:simple?action=suspend&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />
+					</when>
+					<when>
+						<simple>${exchangeProperty.backup} == '[false]' and ${exchangeProperty.routeStatus} == 'Stopped'</simple>
+						<toD
+							uri="controlbus:route:simple?action=resume&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />
+					</when>
+				</choice>
+			</split>
+		</route>
+	</camelContext>
+</beans>
