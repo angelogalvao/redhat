@@ -337,7 +337,7 @@
 						</goals>
 						<configuration>
 							<classResourceNames>
-								<classResourceName>com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService</classResourceName>
+								<classResourceName>com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTServiceImpl</classResourceName>
 							</classResourceNames>
 							<attachSwagger>false</attachSwagger>
 						</configuration>

@@ -1,36 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- JBoss, Home of Professional Open Source Copyright 2014, Red Hat, Inc. 
-	and/or its affiliates, and individual contributors by the @authors tag. See 
-	the copyright.txt in the distribution for a full listing of individual contributors. 
-	Licensed under the Apache License, Version 2.0 (the "License"); you may not 
-	use this file except in compliance with the License. You may obtain a copy 
-	of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
-	by applicable law or agreed to in writing, software distributed under the 
-	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
-	OF ANY KIND, either express or implied. See the License for the specific 
-	language governing permissions and limitations under the License. -->
-<!-- This is the OSGi Blueprint XML file defining the Camel context and routes. 
-	Because the file is in the OSGI-INF/blueprint directory inside our JAR, it 
-	will be automatically activated as soon as the bundle is installed. The root 
-	element for any OSGi Blueprint file is 'blueprint' - you also see the namespace 
-	definitions for both the Blueprint and the Camel namespaces. -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-	xmlns:camel-cxf="http://camel.apache.org/schema/cxf" xmlns:cxf="http://cxf.apache.org/blueprint/core"
-	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+	xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf" 
+	xmlns:cxf="http://cxf.apache.org/blueprint/core"
+	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" 
+	xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
 	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
 	xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd                                          
 						http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd                                          
-						http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd          
+						http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
 						http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
-						http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/blueprint/jaxws.xsd">
+						http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/blueprint/jaxws.xsd
+						http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/blueprint/cxf/camel-cxf.xsd">
 
 	<!-- Configurações do CXF: Endpoints JAX-WS -->
 	<bean id="soapInterceptor"
 		  class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
 		  
-	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService"
+	<jaxws:endpoint address="/PessoaService" id="pessoaSOAPService" 
 		implementor="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceImpl">
 		<jaxws:properties>
 			<entry key="schema-validation-enabled" value="BOTH" />
@@ -66,12 +54,12 @@
 	</jaxrs:server>
 	
 	<!-- Definição das implementações dos serviços REST -->
-	<bean id="pessoaRESTService" class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService" />
+	<bean id="pessoaRESTService" class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTServiceImpl" />
 
 	<!-- Mapeamento das exceções dos serviços REST -->
 	<bean
 		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionExceptionMapper"
-		id="applicationExceptionMapper" />
+		id="applicationExceptionMapper"  />
 	<bean
 		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
 		id="systemExceptionMapper" />
@@ -99,7 +87,7 @@
 		</cm:default-properties>
 	</cm:property-placeholder>
 
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent" >
 		<property name="brokerURL" value="${broker.url}" />
 		<property name="userName" value="${broker.username}" />
 		<property name="password" value="${broker.password}" />
@@ -108,6 +96,32 @@
 	<!-- Serviço que receberá mensagens do broker -->
 	<bean id="pessoaService"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.PessoaService" />
+		
+	<!--  Define a interface REST (EXPOEM) -->	
+	<camel-cxf:rsServer  id="pessoa-api" address="/api/camel/rest" serviceClass="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService">
+		<camel-cxf:providers>
+			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
+			<ref component-id="beanValidationExceptionMapper" />
+			<ref component-id="applicationExceptionMapper" />
+			<ref component-id="systemExceptionMapper" />
+		</camel-cxf:providers>
+		<camel-cxf:features>
+			<!-- Habilita o Swagger -->
+			<bean class="io.fabric8.cxf.endpoint.SwaggerFeature">
+				<property name="title" value="JAXRS Service" />
+				<property name="description" value="Foo REST" />
+				<property name="version" value="${project.version}" />
+			</bean>
+			<ref component-id="commonValidationFeature" />
+		</camel-cxf:features>
+	</camel-cxf:rsServer>
+	
+	<!--  Define a interface REST (Consome) -->
+	<camel-cxf:rsClient id="pessoa-api-consumer"  >
+		<camel-cxf:providers>
+			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
+		</camel-cxf:providers>
+	</camel-cxf:rsClient>	
 
 	<!-- Rotas CAMEL -->
 	<camelContext id="test-fuse-architecture-context"
@@ -151,6 +165,11 @@
 				<constant>30000</constant>
 			</setHeader>
 			<to uri="activemq:testeMensagemAgendadaConversaoOut?timeToLive=60000" />
+		</route>
+		
+		<route id="test-rest-enpoint">
+			<from uri="cxfrs:bean:pessoa-api"/>
+			<log message="Mensagem: ${body.nome}"/>
 		</route>
 
 		<route id="describe-pessoa-route">

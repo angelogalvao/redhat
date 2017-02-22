@@ -1,8 +1,5 @@
 package com.redhat.brazil.consulting.fuse.webservices.rest;
 
-import java.util.Calendar;
-
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -11,8 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.brazil.consulting.fuse.exception.InvalidPessoa;
 import com.redhat.brazil.consulting.fuse.model.Pessoa;
 import com.wordnik.swagger.annotations.Api;
@@ -27,7 +22,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Path("/pessoa")
 @Api(value = "/pessoa", description = "Operações da Entidade Pessoa.")
-public class PessoaRESTService {
+public interface PessoaRESTService {
 
 	@Path("/describe")
 	@POST
@@ -36,32 +31,8 @@ public class PessoaRESTService {
 	@ApiOperation(value = "Descreve as propriedades da pessoa", notes = "Mais dadodos abaixo", response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Pessoa Inválida."),
-            @ApiResponse(code = 500, message = "Pessoa Inválida.")
+            @ApiResponse(code = 500, message = "Erro interno.")
     })
-	public String describePessoa(@Valid Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa {
-		
-		Calendar now		 = Calendar.getInstance();
-		Calendar _nascimento = Calendar.getInstance();
-		
-		_nascimento.setTime(pessoa.getNascimento());
-		
-		if((now.get(Calendar.YEAR) - _nascimento.get(Calendar.YEAR)) < 18)
-			throw new InvalidPessoa(100,"A pessoa deve ser maior de idade");
-		
-		String message = "A pessoa " + pessoa.getNome() + " possui " + _nascimento.get(Calendar.YEAR) + " ano(s) de ideade. Requisição do IP: " + callerIp;
-		
-		return message;
-	}
-	
-	public static void main(String[] args) throws JsonProcessingException {
-		
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.YEAR, 1990);
-		
-		Pessoa pessoa = new Pessoa("Teste", calendar.getTime());
-		
-		ObjectMapper mapper = new ObjectMapper();
-		
-		System.out.println(mapper.writeValueAsString(pessoa));
-	}
+	public String describePessoa(@Valid Pessoa pessoa, @HeaderParam("callerIp") String callerIp) throws InvalidPessoa;
+
 }
