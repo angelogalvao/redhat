@@ -41,7 +41,7 @@
                 </policyEntry>
                 <policyEntry queue=">" producerFlowControl="true" memoryLimit="1mb">
 		            <deadLetterStrategy>
-		              <individualDeadLetterStrategy queuePrefix="DLQ.expiradas." useQueueForQueueMessages="true"/>
+		              <individualDeadLetterStrategy queuePrefix="DLQ." useQueueForQueueMessages="true"/>
 		            </deadLetterStrategy>
                 </policyEntry>
               </policyEntries>
