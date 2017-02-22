@@ -99,11 +99,48 @@
 			<cm:property name="broker.password" value="" />
 		</cm:default-properties>
 	</cm:property-placeholder>
-
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="brokerURL" value="${broker.url}" />
+	
+	<reference id="osgiJtaTransactionManager"
+               interface="javax.transaction.TransactionManager"/>
+	
+	<reference id="osgiPlatformTransactionManager"
+        interface="org.springframework.transaction.PlatformTransactionManager"/>
+        
+    <reference id="recoverableTxManager"
+        interface="org.apache.geronimo.transaction.manager.RecoverableTransactionManager" availability="mandatory"/>
+ 
+     <bean id="jmsXaConnectionFactory"
+          class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${broker.url}" />
 		<property name="userName" value="${broker.username}" />
 		<property name="password" value="${broker.password}" />
+        <property name="redeliveryPolicy">
+            <bean class="org.apache.activemq.RedeliveryPolicy">
+                <property name="maximumRedeliveries" value="0"/>
+            </bean>
+        </property>
+    </bean>
+	
+	 <bean id="jmsXaPoolConnectionFactory"
+          class="org.apache.activemq.pool.JcaPooledConnectionFactory">
+        <property name="name" value="MyXaResourceName"/>
+        <property name="maxConnections" value="8"/>
+        <property name="connectionFactory" ref="jmsXaConnectionFactory"/>
+        <property name="transactionManager" ref="recoverableTxManager"/>
+    </bean>
+	
+	<bean id="jmsTxConfig"
+          class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="jmsXaPoolConnectionFactory"/> 
+        <property name="transactionManager" ref="osgiPlatformTransactionManager"/> 
+        <property name="transacted" value="false"/>
+        <property name="cacheLevelName" value="CACHE_CONNECTION"/>
+        <property name="concurrentConsumers" value="10"/>
+    </bean> 
+	
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsTxConfig" />
 	</bean>
 
 	<!-- Serviço que receberá mensagens do broker -->
@@ -119,8 +156,7 @@
 			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="mock:dlq" 
 			useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
 			<redeliveryPolicy maximumRedeliveries="2"
-				redeliveryDelay="500" logHandled="true" asyncDelayedRedelivery="true"
-				retryAttemptedLogLevel="DEBUG" />
+				redeliveryDelay="500" logHandled="false" asyncDelayedRedelivery="true" />
 		</errorHandler>
 
 
@@ -156,6 +192,7 @@
 
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
+			<transacted />
 			<unmarshal ref="pessoa-data-format" />
 			<bean ref="pessoaService" method="describePessoa" />
 			<log message="Result: ${body}" />
