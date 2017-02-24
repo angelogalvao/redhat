@@ -274,6 +274,7 @@
 							nu.xom,
 							javax.transaction,
 							org.apache.camel.spring.spi,
+							org.apache.cxf.jaxrs.provider.json,
 							*
 						</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;

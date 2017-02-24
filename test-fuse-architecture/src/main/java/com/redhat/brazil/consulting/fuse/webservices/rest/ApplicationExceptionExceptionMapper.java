@@ -6,6 +6,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.camel.Exchange;
+
 import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
 
 /**
@@ -23,6 +25,13 @@ public class ApplicationExceptionExceptionMapper implements ExceptionMapper<Appl
 				.type(MediaType.APPLICATION_JSON)
 				.entity(exception.getExceptionMessage())				
 				.build();
+	}
+	
+	public Response toResponseCamel(Exchange exchange) {
+		
+		ApplicationException exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, ApplicationException.class);
+
+		return toResponse(exception);
 	}
 
 }
