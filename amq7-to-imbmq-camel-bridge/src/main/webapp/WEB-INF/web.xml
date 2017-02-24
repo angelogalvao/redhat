@@ -2,12 +2,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
  
-  <display-name>Camel Bootstrap</display-name>
+  <display-name>AMQ-7 to IBM MQ Bridge</display-name>
  
   <!-- you can configure any of the properties on CamelContext, eg setName will be configured as below -->
   <context-param>
     <param-name>name</param-name>
-    <param-value>CamelBootstrap</param-value>
+    <param-value>amq7-to-ibmmq-bridge</param-value>
   </context-param>
  
   <!-- location of Camel route xml files -->

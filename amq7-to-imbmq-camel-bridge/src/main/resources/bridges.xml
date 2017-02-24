@@ -1,0 +1,18 @@
+<!-- 
+	Example of a bridge configuration file.
+	it must be at $AMQ7_INSTANCE_HOME/etc/bridges folder.
+	You can have as many files that you want.
+-->
+<bridges>
+	<bridge>
+		<from>amq7:REQUEST</from>		
+		<to>wmq:RESPONSE</to>
+		<messagesPerSecond>1000</messagesPerSecond>
+	</bridge>
+	<bridge>
+		<from>amq7:PING</from>		
+		<to>wmq:PONG</to>
+		<messagesPerSecond>1</messagesPerSecond>
+	</bridge>
+
+</bridges>
