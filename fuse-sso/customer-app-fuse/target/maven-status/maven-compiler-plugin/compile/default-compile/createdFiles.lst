@@ -1,0 +1,4 @@
+org/keycloak/example/CxfRsClient$TypedList.class
+org/keycloak/example/CxfRsClient$Failure.class
+org/keycloak/example/CamelClient.class
+org/keycloak/example/CxfRsClient.class

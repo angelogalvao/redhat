@@ -1,0 +1,7 @@
+org/keycloak/example/ws/types/GetProduct.class
+org/keycloak/example/ws/UnknownProductFault.class
+org/keycloak/example/ws/types/GetProductResponse.class
+org/keycloak/example/ws/types/UnknownProductFault.class
+org/keycloak/example/ws/ProductImpl.class
+org/keycloak/example/ws/types/ObjectFactory.class
+org/keycloak/example/ws/Product.class
