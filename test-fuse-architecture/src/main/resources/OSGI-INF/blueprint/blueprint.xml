@@ -161,6 +161,22 @@
 		</camel-cxf:providers>
 	</camel-cxf:rsClient>	
 	
+	<camel-cxf:cxfEndpoint address="/api/camel/PessoaService" id="pessoa-camel-ws" 
+		serviceClass="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService"  />
+		
+		
+	<camelContext id="test-fuse-architecture-context-ws"
+		 xmlns="http://camel.apache.org/schema/blueprint">
+	
+		<route id="test-ws-enpoint">
+			<from uri="cxf:bean:pessoa-camel-ws"/>
+			<log message="IP ${body[1]} " />
+			<bean ref="pessoaService" method="describePessoa" />
+		</route>
+	
+	</camelContext>	 
+	
+	
 	<camelContext id="test-fuse-architecture-context-rs"
 		 xmlns="http://camel.apache.org/schema/blueprint">
 		 
