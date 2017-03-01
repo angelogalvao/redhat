@@ -58,7 +58,7 @@
 
 	<!-- Mapeamento das exceções dos serviços REST -->
 	<bean
-		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionExceptionMapper"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionMapper"
 		id="applicationExceptionMapper"  />
 	<bean
 		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
@@ -142,8 +142,6 @@
 	<camel-cxf:rsServer  id="pessoa-api" address="/api/camel/rest" serviceClass="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService">
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
-			<ref component-id="applicationExceptionMapper" />
-			<ref component-id="systemExceptionMapper" />
 		</camel-cxf:providers>
 		<camel-cxf:features>
 			<!-- Habilita o Swagger -->
@@ -155,8 +153,9 @@
 		</camel-cxf:features>
 	</camel-cxf:rsServer>
 	
-	<!--  Define a interface REST (Consome) -->
-	<camel-cxf:rsClient id="pessoa-api-consumer"  >
+	<!--  Define a interface REST (Producer) -->
+	<camel-cxf:rsClient id="test-rs-producer" 
+		address="https://httpbin.org" >
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
 		</camel-cxf:providers>
@@ -219,12 +218,41 @@
 			<handled>
 				<constant>true</constant>
 			</handled>
+			
+			<setExchangePattern pattern="InOnly"/>
+			
 			<process ref="messageExceptionHandler" />
 			
      		 <recipientList>
      		 	<header>DLQ_Destination</header>
      		 </recipientList>
 		</onException>
+		
+		<route id="teste-producer-rs">
+			<from uri="activemq:queue:test-rs-producer-queue" />
+			<setHeader headerName="CamelHttpMethod">
+				<constant>GET</constant>
+			</setHeader>
+			<setHeader headerName="CamelCxfRsUsingHttpAPI">
+				<constant>true</constant>
+			</setHeader>
+			<setHeader headerName="CamelCxfRsResponseClass">
+				<constant>com.redhat.brazil.consulting.fuse.webservices.rest.TestRsProducerResponse</constant>
+			</setHeader>
+			<setHeader headerName="CamelHttpPath">
+				<constant>/get</constant>
+			</setHeader>
+			<setHeader headerName="CamelHttpQuery">
+				<simple>nome=${body}</simple>
+			</setHeader>
+			<setExchangePattern pattern="InOut"/>
+			<transform>
+				<simple>${null}</simple>
+			</transform>
+			<to uri="cxfrs://bean://test-rs-producer"/>
+			<process ref="testRsProducerProcessor" />
+		</route>
+		
 		 
 		 <route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
@@ -277,6 +305,10 @@
 	<!-- Handler de erro da mensagem -->
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
+		
+		
+	<bean id="testRsProducerProcessor"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.TestRsProducerProcessor" />
 
 </blueprint>
 
