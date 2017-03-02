@@ -16,7 +16,7 @@ import com.redhat.brazil.consulting.fuse.exception.ApplicationException;
  *
  */
 @Provider
-public class ApplicationExceptionExceptionMapper implements ExceptionMapper<ApplicationException>{
+public class ApplicationExceptionMapper implements ExceptionMapper<ApplicationException>{
 
 	@Override
 	public Response toResponse(ApplicationException exception) {
