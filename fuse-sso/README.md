@@ -1,6 +1,9 @@
 RHSSO Fuse demo
 ==================
 
+Based on: https://github.com/keycloak/keycloak/tree/2.5.x/examples/fuse
+
+
 Currently RHSSO supports securing your web applications running inside [JBoss Fuse](http://www.jboss.org/products/fuse/overview/) or [Apache Karaf](http://karaf.apache.org/). It leverages:
 - Jetty9 adapter for both JBoss Fuse 6.3 and Apache Karaf 4, that include [Jetty9](http://eclipse.org/jetty/) server under the covers and Jetty is used for running various kinds of web applications
 - Jetty8 adapter for both JBoss Fuse 6.2 and Apache Karaf 3, that include [Jetty8](http://eclipse.org/jetty/) server under the covers and Jetty is used for running various kinds of web applications
@@ -46,10 +49,10 @@ Running demo on JBoss Fuse 6.3.0 Rollup 1
 You just need to download and run JBoss Fuse and then run those commands from the karaf terminal to install the needed features and RHSSO fuse demo (Replace RHSSO versions with the current RHSSO version number):
 
 ```
-features:addurl mvn:org.RHSSO/RHSSO-osgi-features/2.4.0.Final-redhat-1/xml/features
-features:addurl mvn:org.RHSSO.example.demo/RHSSO-fuse-example-features/7.1.0.Beta/xml/features
-features:install RHSSO
-features:install RHSSO-fuse-6.3-example
+features:addurl mvn:org.keycloak/keycloak-osgi-features/2.4.0.Final-redhat-1/xml/features
+features:addurl mvn:org.keycloak.example.demo/keycloak-fuse-example-features/7.1.0.Beta/xml/features
+features:install keycloak
+features:install keycloak-fuse-6.3-example
 ```
 
 After that you can test running on [http://localhost:8181/customer-portal](http://localhost:8181/customer-portal) and login as "bburke@redhat.com" with password "password". Customer-portal is able to
