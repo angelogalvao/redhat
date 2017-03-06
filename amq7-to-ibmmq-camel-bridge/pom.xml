@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.consulting</groupId>
-	<artifactId>amq7-to-imbmq-camel-bridge</artifactId>
+	<artifactId>amq7-to-ibmmq-camel-bridge</artifactId>
 	<version>1.0.0</version>
 	<packaging>war</packaging>
 	<name>AMQ7 to IBM MQ Camel Bridge</name>

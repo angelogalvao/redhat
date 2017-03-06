@@ -51,7 +51,7 @@ public class BridgeRoute extends RouteBuilder {
 				.errorHandler(defaultErrorHandler().redeliveryDelay(redeliveryDelay).maximumRedeliveries(-1))
 				.routeId(routeId)
 				//.transacted()
-				.log("Message: ${body}")
+				//.log("Message: ${body}")
 				.setHeader("JMS_IBM_MsgType")
 					.constant("8")
 				.setHeader("JMS_IBM_MsgType")

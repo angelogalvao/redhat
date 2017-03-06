@@ -31,7 +31,7 @@
 			<ref component-id="soapInterceptor" />
 		</jaxws:inInterceptors>
 	</jaxws:endpoint>
-	
+		
 	<!-- Configurações do CXF: JAX-RS -->
 	<jaxrs:server address="/rest" id="porto-conecta-piloto-jaxrs-server">
 		<jaxrs:serviceBeans>
@@ -67,7 +67,7 @@
 	<!-- Configurações a feature de Bean Validation - JAX-RS e JAX-WS -->
 	<bean class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper"
 		id="beanValidationExceptionMapper" />
-	<bean class="org.apache.cxf.validation.BeanValidationFeature" id="commonValidationFeature">
+	<bean  id="commonValidationFeature" class="org.apache.cxf.validation.BeanValidationFeature">
 		<property name="provider" ref="beanValidationProvider" />
 	</bean>
 	<bean class="org.apache.cxf.validation.BeanValidationProvider" id="beanValidationProvider">

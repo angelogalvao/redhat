@@ -123,7 +123,7 @@
 		
 		<route id="check-liveness">
 			<from uri="timer:livenessCheckerTimer?delay=0&amp;period=1000" />
-			<to uri="netty4-http:http://localhost:8161/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,serviceType=Broker/Backup" />
+			<toD uri="netty4-http:http://localhost:${bridge.amq.port}/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,serviceType=Broker/Backup" />
 			<transform>
 				<jsonpath>$.value.*.Backup</jsonpath>
 			</transform>
