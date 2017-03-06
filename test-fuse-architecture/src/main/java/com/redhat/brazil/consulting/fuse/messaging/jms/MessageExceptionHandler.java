@@ -1,6 +1,7 @@
 package com.redhat.brazil.consulting.fuse.messaging.jms;
 
-import javax.validation.ValidationException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.camel.Exchange;
@@ -37,21 +38,33 @@ public class MessageExceptionHandler implements Processor {
 			exchange.getIn().setHeader("ExceptionType", cause.getClass().getName());
 			
 			logger.debug("JMS "+ body, cause);
-		} else if(cause instanceof ValidationException ) {
+		} 
+//		else if(cause instanceof ValidationException ) {
 			// TODO extract the message
-		} else {
+//		} 
+		else {
+			
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			cause.printStackTrace(pw);
+			pw.flush();
+			sw.flush();
+			
+			exchange.getIn().setHeader("ErrorStack", sw.toString());
+			sw.close();
+			pw.close();
 			
 			logger.error("JMS "+ body, cause);
 		}
 		
-		exchange.getIn().setHeader("Error", cause.getMessage());		
+		exchange.getIn().setHeader("ErrorMessage", cause.getMessage());		
 		exchange.getIn().setHeader("OriginalDestination", originalDestination);
 		
-		originalDestination = originalDestination.replaceAll("queue://", "");
-		exchange.getContext().createProducerTemplate().send("activemq:queue:DLQ."+originalDestination, exchange);
-				
 		
-//		exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE); 
+		String queueName = originalDestination.replaceAll("queue://", "");
+		exchange.getIn().setHeader("DLQ_Destination", "activemq:queue:DLQ."+queueName);
+		
+		
 	}
 
 }

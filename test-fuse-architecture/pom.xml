@@ -250,6 +250,7 @@
 
 						<Import-Package>
 							javax.jws;version="[0,3)",
+							javax.jws.soap;version="[0,3)",
 							javax.wsdl,
 							javax.xml,
 							javax.xml.soap,
@@ -274,6 +275,7 @@
 							nu.xom,
 							javax.transaction,
 							org.apache.camel.spring.spi,
+							org.apache.cxf.jaxrs.provider.json,
 							*
 						</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
@@ -326,6 +328,40 @@
 					</execution>
 				</executions>
 			</plugin>
+			 
+			<plugin>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-codegen-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+							<wsdlOptions>
+								<wsdlOption>
+									<wsdl>${basedir}/src/main/resources/GerenciarContratosService.wsdl</wsdl>
+									
+									<extraargs>
+									<!--
+										<extraarg>-p</extraarg>
+										<extraarg>http://portoconecta.com.br/services/GerenciarContratos/=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://portoconecta.com.br/services/GerenciarContratos=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg>
+										-->
+									</extraargs>
+									
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>fabric-cxf-plugins</artifactId>

@@ -58,7 +58,7 @@
 
 	<!-- Mapeamento das exceções dos serviços REST -->
 	<bean
-		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionExceptionMapper"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.ApplicationExceptionMapper"
 		id="applicationExceptionMapper"  />
 	<bean
 		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
@@ -134,13 +134,14 @@
 	<bean id="pessoaService"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.PessoaService" />
 		
+	<bean id="pessoaRestTransform"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRestTransform" />
+		
+		
 	<!--  Define a interface REST (EXPOEM) -->	
 	<camel-cxf:rsServer  id="pessoa-api" address="/api/camel/rest" serviceClass="com.redhat.brazil.consulting.fuse.webservices.rest.PessoaRESTService">
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
-			<ref component-id="beanValidationExceptionMapper" />
-			<ref component-id="applicationExceptionMapper" />
-			<ref component-id="systemExceptionMapper" />
 		</camel-cxf:providers>
 		<camel-cxf:features>
 			<!-- Habilita o Swagger -->
@@ -149,28 +150,85 @@
 				<property name="description" value="Foo REST" />
 				<property name="version" value="${project.version}" />
 			</bean>
-			<ref component-id="commonValidationFeature" />
 		</camel-cxf:features>
 	</camel-cxf:rsServer>
 	
-	<!--  Define a interface REST (Consome) -->
-	<camel-cxf:rsClient id="pessoa-api-consumer"  >
+	<!--  Define a interface REST (Producer) -->
+	<camel-cxf:rsClient id="test-rs-producer" 
+		address="https://httpbin.org" >
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
 		</camel-cxf:providers>
 	</camel-cxf:rsClient>	
+	
+	<camel-cxf:cxfEndpoint address="/api/camel/PessoaService" id="pessoa-camel-ws" 
+		serviceClass="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService"  />
+		
+	<camel-cxf:cxfEndpoint address="http://frameworkh.portoseguroconecta.com.br/GerenciarContratosService" id="gerenciar-contrato-ws" 
+		serviceClass="br.com.portoconecta.services.gerenciarcontratos.GerenciarContratosService"  />
+		
+		
+	<camelContext id="test-fuse-architecture-context-ws"
+		 xmlns="http://camel.apache.org/schema/blueprint">
+	
+		<route id="test-ws-enpoint">
+			<from uri="cxf:bean:pessoa-camel-ws"/>
+			<log message="IP ${body[1]} " />
+			<bean ref="pessoaService" method="describePessoa" />
+		</route>
+		
+		<route id="test-ws-producer">
+			<from uri="activemq:queue:obter-contrato-ws"/>
+			<bean ref="obterContratoTransform" method="prepararObterContratorRequest" />
+			<setHeader headerName="operationName">
+				<constant>ObterContrato</constant>
+			</setHeader>
+			<to uri="cxf:bean:gerenciar-contrato-ws"/>
+			<bean ref="obterContratoTransform" method="lerResponse" />
+		</route>
+	
+	</camelContext>	 
+	
+	
+	<camelContext id="test-fuse-architecture-context-rs"
+		 xmlns="http://camel.apache.org/schema/blueprint">
+		 
+		 
+		 <dataFormats>
+			<json id="pessoa-data-format-rs" library="Jackson"
+				unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
+
+			<xmljson id="xmljson-data-format-rs" />
+		</dataFormats>
+		 
+		<onException>
+			<exception>java.lang.Exception</exception>
+			<handled>
+				<constant>true</constant>
+			</handled>
+			<bean ref="systemExceptionMapper" method="toResponseCamel" />
+		</onException>
+		
+		<onException>
+			<exception>com.redhat.brazil.consulting.fuse.exception.ApplicationException</exception>
+			<handled>
+				<constant>true</constant>
+			</handled>
+			<bean ref="applicationExceptionMapper" method="toResponseCamel" />
+		</onException>
+		 
+		 <route id="test-rest-enpoint">
+			<from uri="cxfrs:bean:pessoa-api"/>
+			<bean ref="pessoaRestTransform" method="transform" />
+			<marshal ref="pessoa-data-format-rs" />
+			<to uri="activemq:queue:pessoa-describe?disableReplyTo=true" />
+		</route>
+		 
+	</camelContext>
 
 	<!-- Rotas CAMEL -->
-	<camelContext id="test-fuse-architecture-context"
-		errorHandlerRef="deadLetterErrorHandler" xmlns="http://camel.apache.org/schema/blueprint">
-		
-		<!-- Configura o tratamento de erro das mensagens trocadas com o A-MQ -->
-		<errorHandler xmlns="http://camel.apache.org/schema/blueprint"
-			id="deadLetterErrorHandler" type="DeadLetterChannel" deadLetterUri="mock:dlq" 
-			useOriginalMessage="true" onPrepareFailureRef="messageExceptionHandler">
-			<redeliveryPolicy maximumRedeliveries="2"
-				redeliveryDelay="500" logHandled="false" asyncDelayedRedelivery="true" />
-		</errorHandler>
+	<camelContext id="test-fuse-architecture-context-amq" 
+		 xmlns="http://camel.apache.org/schema/blueprint">
 		
 
 		<dataFormats>
@@ -180,19 +238,59 @@
 
 			<xmljson id="xmljson-data-format" />
 		</dataFormats>
+		
+		<onException useOriginalMessage="true"  >
+			<exception>java.lang.Exception</exception>
+			<redeliveryPolicy maximumRedeliveries="2" 
+				redeliveryDelay="500" logHandled="false" asyncDelayedRedelivery="true" />
+				
+			<handled>
+				<constant>true</constant>
+			</handled>
+			
+			<setExchangePattern pattern="InOnly"/>
+			
+			<process ref="messageExceptionHandler" />
+			
+     		 <recipientList>
+     		 	<header>DLQ_Destination</header>
+     		 </recipientList>
+		</onException>
+		
+		<route id="teste-producer-rs">
+			<from uri="activemq:queue:test-rs-producer-queue" />
+			<setHeader headerName="CamelHttpMethod">
+				<constant>GET</constant>
+			</setHeader>
+			<setHeader headerName="CamelCxfRsUsingHttpAPI">
+				<constant>true</constant>
+			</setHeader>
+			<setHeader headerName="CamelCxfRsResponseClass">
+				<constant>com.redhat.brazil.consulting.fuse.webservices.rest.TestRsProducerResponse</constant>
+			</setHeader>
+			<setHeader headerName="CamelHttpPath">
+				<constant>/get</constant>
+			</setHeader>
+			<setHeader headerName="CamelHttpQuery">
+				<simple>nome=${body}</simple>
+			</setHeader>
+			<setExchangePattern pattern="InOut"/>
+			<transform>
+				<simple>${null}</simple>
+			</transform>
+			<to uri="cxfrs://bean://test-rs-producer"/>
+			<process ref="testRsProducerProcessor" />
+		</route>
+		
+		 
+		 <route id="describe-pessoa-route">
+			<from uri="activemq:queue:pessoa-describe" />
+			<unmarshal ref="pessoa-data-format" />
+			<to uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver"/>
+			<bean ref="pessoaService" method="describePessoa" />
+			<log message="Result: ${body}" />
+		</route>
 
-<!-- 
-		<onException useOriginalMessage="true" >
-			<exception>com.fasterxml.jackson.core.JsonParseException</exception>
-			<to uri="activemq:queue:exception-JsonParseException"  />
-		</onException>
-		
-		<onException useOriginalMessage="true" >
-			<exception>com.redhat.brazil.consulting.fuse.exception.InvalidPessoa</exception>
-			<to uri="activemq:queue:exception-InvalidPessoa" />
-		</onException>
-		
-		 -->
 		 
 		<route id="testeMensagemAgendadaConversao">
 			<from uri="activemq:testeMensagemAgendadaConversaoIn" />
@@ -203,19 +301,8 @@
 			<to uri="activemq:testeMensagemAgendadaConversaoOut?timeToLive=60000" />
 		</route>
 		
-		<route id="test-rest-enpoint">
-			<from uri="cxfrs:bean:pessoa-api"/>
-			<log message="Mensagem: ${body.nome}"/>
-		</route>
 
-		<route id="describe-pessoa-route">
-			<from uri="activemq:queue:pessoa-describe" />
-			<transacted />
-			<unmarshal ref="pessoa-data-format" />
-			<to uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver"/>
-			<bean ref="pessoaService" method="describePessoa" />
-			<log message="Result: ${body}" />
-		</route>
+
 
 		<route id="convert-json-to-xml">
 			<from uri="activemq:queue:json-to-xml" />
@@ -247,6 +334,13 @@
 	<!-- Handler de erro da mensagem -->
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
+		
+		
+	<bean id="testRsProducerProcessor"
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.TestRsProducerProcessor" />
+		
+	<bean id="obterContratoTransform"
+		class="com.redhat.brazil.consulting.fuse.webservices.soap.ObterContratoTransform" />
 
 </blueprint>
 
