@@ -1,12 +1,12 @@
 package com.redhat.brazil.consulting.fuse.webservices.soap;
 
-import br.com.portoconecta.services.gerenciarcontratos.Identificacao;
+/*import br.com.portoconecta.services.gerenciarcontratos.Identificacao;
 import br.com.portoconecta.services.gerenciarcontratos.ObterContratoRequest;
 import br.com.portoconecta.services.gerenciarcontratos.ObterContratoResponse;
-
+*/
 public class ObterContratoTransform {
 	
-	public ObterContratoRequest prepararObterContratorRequest(String body){
+	/*public ObterContratoRequest prepararObterContratorRequest(String body){
 		ObterContratoRequest obterContratoRequest = new ObterContratoRequest();
         obterContratoRequest.setNumeroDoContrato(47242);
         Identificacao identificacao = new Identificacao();
@@ -25,6 +25,6 @@ public class ObterContratoTransform {
 		System.out.println("CPF "+response.getContrato().getCpfVendedor());
 		
 		return response;
-	}
+	}*/
 
 }

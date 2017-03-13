@@ -114,6 +114,8 @@
 
 	<!-- Rota Camel que executa a bridge entre o A-MQ e o IBM MQSeries -->
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
+	
+	<propertyPlaceholder id="propertiesCamel" location="file:${artemis.instance}/etc/bridge.properties" />
 
 		<routeBuilder ref="loadBridgesRouteBuilder" />
 
@@ -123,7 +125,7 @@
 		
 		<route id="check-liveness">
 			<from uri="timer:livenessCheckerTimer?delay=0&amp;period=1000" />
-			<toD uri="netty4-http:http://localhost:${bridge.amq.port}/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,serviceType=Broker/Backup" />
+			<toD uri="netty4-http:http://{{bridge.amq.host}}:{{bridge.amq.port}}/jolokia/read/org.apache.activemq.artemis:type=Broker,brokerName=&quot;*&quot;,serviceType=Broker/Backup" />
 			<transform>
 				<jsonpath>$.value.*.Backup</jsonpath>
 			</transform>
@@ -144,12 +146,17 @@
 				</setProperty>
 				<choice>
 					<when>
-						<simple>${exchangeProperty.backup} == '[true]' and ${exchangeProperty.routeStatus} != 'Stopped'</simple>
+						<simple>${exchangeProperty.backup} == '[true]' and ${exchangeProperty.routeStatus} != 'Suspended'</simple>
 						<toD
 							uri="controlbus:route:simple?action=suspend&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />
 					</when>
 					<when>
 						<simple>${exchangeProperty.backup} == '[false]' and ${exchangeProperty.routeStatus} == 'Stopped'</simple>
+						<toD
+							uri="controlbus:route:simple?action=resume&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />
+					</when>
+					<when>
+						<simple>${exchangeProperty.backup} == '[false]' and ${exchangeProperty.routeStatus} == 'Suspended'</simple>
 						<toD
 							uri="controlbus:route:simple?action=resume&amp;routeId=${exchangeProperty.routeName}&amp;loggingLevel=OFF" />
 					</when>

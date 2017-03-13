@@ -33,7 +33,7 @@ public class PessoaRESTServiceImpl implements PessoaRESTService {
 	public static void main(String[] args) throws JsonProcessingException {
 		
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.YEAR, 1990);
+		calendar.set(Calendar.YEAR, 2010);
 		
 		Pessoa pessoa = new Pessoa("Teste", calendar.getTime());
 		

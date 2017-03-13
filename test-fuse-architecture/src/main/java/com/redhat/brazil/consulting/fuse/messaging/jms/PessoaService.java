@@ -2,6 +2,8 @@ package com.redhat.brazil.consulting.fuse.messaging.jms;
 
 import java.util.Calendar;
 
+import org.apache.camel.Header;
+
 import com.redhat.brazil.consulting.fuse.exception.InvalidPessoa;
 import com.redhat.brazil.consulting.fuse.model.Pessoa;
 
@@ -13,7 +15,7 @@ import com.redhat.brazil.consulting.fuse.model.Pessoa;
  */
 public class PessoaService {
 
-	public String describePessoa(Pessoa pessoa, String callerIp) throws InvalidPessoa {
+	public String describePessoa(Pessoa pessoa, @Header("callerIp") String callerIp) throws InvalidPessoa {
 
 		Calendar now = Calendar.getInstance();
 		Calendar _nascimento = Calendar.getInstance();

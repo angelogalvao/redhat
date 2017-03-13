@@ -3,16 +3,16 @@ package com.redhat.brazil.consulting.fuse.messaging.soap;
 import org.junit.Before;
 import org.junit.Test;
 
-import br.com.portoconecta.services.gerenciarcontratos.GerenciarContratos;
+/*import br.com.portoconecta.services.gerenciarcontratos.GerenciarContratos;
 import br.com.portoconecta.services.gerenciarcontratos.GerenciarContratosService;
 import br.com.portoconecta.services.gerenciarcontratos.Identificacao;
 import br.com.portoconecta.services.gerenciarcontratos.ObterContratoRequest;
-import br.com.portoconecta.services.gerenciarcontratos.ObterContratoResponse;
+import br.com.portoconecta.services.gerenciarcontratos.ObterContratoResponse;*/
 
 
 public class SoapTest {
 	
-	private GerenciarContratos ss;
+/*	private GerenciarContratos ss;
     private GerenciarContratosService port;
     
     @Before
@@ -39,5 +39,5 @@ public class SoapTest {
         ObterContratoResponse obterContratoResponse = port.obterContrato(obterContratoRequest);
         System.out.println("obterContrato.result=" + obterContratoResponse.getContrato().getCpfVendedor());
     }
-
+*/
 }
