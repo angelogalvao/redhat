@@ -64,6 +64,9 @@
 	<bean
 		class="com.redhat.brazil.consulting.fuse.webservices.rest.SystemExceptionMapper"
 		id="systemExceptionMapper" />
+		<bean
+		class="com.redhat.brazil.consulting.fuse.webservices.rest.CamelBeanValidationExceptionMapper"
+		id="camelBeanValidationExceptionMapper" />
 
 	<!-- Configurações a feature de Bean Validation - JAX-RS e JAX-WS -->
 	<bean class="org.apache.cxf.jaxrs.validation.ValidationExceptionMapper"
@@ -143,7 +146,7 @@
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
 			
-			<ref component-id="beanValidationExceptionMapper" />
+			<ref component-id="camelBeanValidationExceptionMapper" />
 			<ref component-id="applicationExceptionMapper" />
 			<ref component-id="systemExceptionMapper" />
 		</camel-cxf:providers>

@@ -267,6 +267,7 @@
 							org.hibernate.validator,
 							javax.validation,
 							org.apache.camel,
+							org.apache.camel.component.bean.validator,
 							org.apache.cxf,
 							org.apache.cxf.bus.spring,
 							org.apache.cxf.headers,
