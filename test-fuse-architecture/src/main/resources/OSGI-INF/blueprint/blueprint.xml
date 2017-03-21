@@ -169,7 +169,12 @@
 
 	<camel-cxf:cxfEndpoint address="/api/camel/PessoaService"
 		id="pessoa-ws-api"
-		serviceClass="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService" />
+		serviceClass="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService">
+		
+		<camel-cxf:properties>
+       		<entry key="dataFormat" value="POJO"/>
+    	</camel-cxf:properties>
+	</camel-cxf:cxfEndpoint>
 
 	<!-- <camel-cxf:cxfEndpoint address="http://frameworkh.portoseguroconecta.com.br/GerenciarContratosService" 
 		id="gerenciar-contrato-ws" serviceClass="br.com.portoconecta.services.gerenciarcontratos.GerenciarContratosService" 
@@ -181,7 +186,8 @@
 
 		<route id="test-ws-enpoint">
 			<from uri="cxf:bean:pessoa-ws-api" />
-			<log message="IP ${body[1]} " />
+			<convertBodyTo type="com.redhat.brazil.consulting.fuse.model.Pessoa"/>  
+			<to   uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver" />
 			<bean ref="pessoaService" method="describePessoa" />
 		</route>
 
@@ -204,7 +210,6 @@
 
 		<dataFormats>
 			<json id="pessoa-data-format-rs" library="Jackson" unmarshalTypeName="com.redhat.brazil.consulting.fuse.model.Pessoa" />
-
 			<xmljson id="xmljson-data-format-rs" />
 		</dataFormats>
 
