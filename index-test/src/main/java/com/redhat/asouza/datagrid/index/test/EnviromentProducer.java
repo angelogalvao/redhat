@@ -31,7 +31,6 @@ public class EnviromentProducer {
 	public void configureCache() throws Exception {
 
 		Configuration conf = new ConfigurationBuilder().tcpNoDelay(true)
-				
 				.nearCache().mode(NearCacheMode.LAZY).maxEntries(100)
 				.addServers("localhost")
 				.marshaller(new ProtoStreamMarshaller())				

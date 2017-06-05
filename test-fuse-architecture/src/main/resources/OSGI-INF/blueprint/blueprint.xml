@@ -14,6 +14,8 @@
 						http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/blueprint/jaxws.xsd
 						http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/blueprint/cxf/camel-cxf.xsd">
 
+	<!--  Configuração de acesso ao banco de dados -->
+	
 	<!-- Configurações do CXF: Endpoints JAX-WS -->
 	<bean id="soapInterceptor"
 		class="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPServiceInterceptor" />
@@ -30,7 +32,7 @@
 		<jaxws:inInterceptors>
 			<ref component-id="soapInterceptor" />
 		</jaxws:inInterceptors>
-	</jaxws:endpoint>
+	</jaxws:endpoint> 
 
 	<!-- Configurações do CXF: JAX-RS -->
 	<jaxrs:server address="/rest" id="porto-conecta-piloto-jaxrs-server">
@@ -52,6 +54,42 @@
 			<ref component-id="beanValidationFeature" />
 		</jaxrs:features>
 	</jaxrs:server>
+	
+	<!-- Mapeamento do JAX-RS + RH-SSO  -->
+	 <bean id="cxfConstraintMapping" class="org.eclipse.jetty.security.ConstraintMapping">
+        <property name="constraint">
+            <bean class="org.eclipse.jetty.util.security.Constraint">
+                <property name="name" value="cst1"/>
+                <property name="roles">
+                    <list>
+                        <value>portoseguroconecta</value>
+                    </list>
+                </property>
+                <property name="authenticate" value="true"/>
+                <property name="dataConstraint" value="0"/>
+            </bean>
+        </property>
+        <property name="pathSpec" value="/cxf/*"/>
+    </bean>
+
+    <bean id="cxfKeycloakPaxWebIntegration" class="org.keycloak.adapters.osgi.PaxWebIntegrationService"
+          init-method="start" destroy-method="stop">
+        <property name="bundleContext" ref="blueprintBundleContext" />
+        <property name="jettyWebXmlLocation" value="/WEB-INF/jetty-web.xml" />
+        <property name="constraintMappings">
+            <list>
+                <ref component-id="cxfConstraintMapping" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="defaultCxfReregistration" class="org.keycloak.adapters.osgi.ServletReregistrationService" depends-on="cxfKeycloakPaxWebIntegration"
+          init-method="start" destroy-method="stop">
+        <property name="bundleContext" ref="blueprintBundleContext" />
+        <property name="managedServiceReference">
+            <reference interface="org.osgi.service.cm.ManagedService" filter="(service.pid=org.apache.cxf.osgi)" timeout="5000"  />
+        </property>
+    </bean>
 
 	<!-- Definição das implementações dos serviços REST -->
 	<bean id="pessoaRESTService"
@@ -92,9 +130,11 @@
 		</cm:default-properties>
 	</cm:property-placeholder>
 
+
+	<!-- Configuração de acesso ao broker -->
 	<reference id="osgiJtaTransactionManager" interface="javax.transaction.TransactionManager" />
 
-	<reference id="osgiPlatformTransactionManager"
+ 	<reference id="osgiPlatformTransactionManager"
 		interface="org.springframework.transaction.PlatformTransactionManager" />
 
 	<reference id="recoverableTxManager"
@@ -160,13 +200,14 @@
 		</camel-cxf:features>
 	</camel-cxf:rsServer>
 
-	<!-- Define a interface REST (Producer) -->
+	<!-- Define a interface REST (Consome) -->
 	<camel-cxf:rsClient id="pessoa-api-client" address="http://localhost:8181/cxf/rest">
 		<camel-cxf:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
 		</camel-cxf:providers>
 	</camel-cxf:rsClient>
 
+	<!-- Define a interface SOAP (EXPOE) -->
 	<camel-cxf:cxfEndpoint address="/api/camel/PessoaService"
 		id="pessoa-ws-api"
 		serviceClass="com.redhat.brazil.consulting.fuse.webservices.soap.PessoaSOAPService">
@@ -175,11 +216,7 @@
        		<entry key="dataFormat" value="POJO"/>
     	</camel-cxf:properties>
 	</camel-cxf:cxfEndpoint>
-
-	<!-- <camel-cxf:cxfEndpoint address="http://frameworkh.portoseguroconecta.com.br/GerenciarContratosService" 
-		id="gerenciar-contrato-ws" serviceClass="br.com.portoconecta.services.gerenciarcontratos.GerenciarContratosService" 
-		/> -->
-
+	
 
 	<camelContext id="test-fuse-architecture-context-ws"
 		xmlns="http://camel.apache.org/schema/blueprint">
@@ -190,16 +227,6 @@
 			<to   uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver" />
 			<bean ref="pessoaService" method="describePessoa" />
 		</route>
-
-<!-- 		<route id="test-ws-producer">
-			<from uri="activemq:queue:obter-contrato-ws" />
-			<bean ref="obterContratoTransform" method="prepararObterContratorRequest" />
-			<setHeader headerName="operationName">
-				<constant>ObterContrato</constant>
-			</setHeader>
-			<to uri="cxf:bean:gerenciar-contrato-ws" />
-			<bean ref="obterContratoTransform" method="lerResponse" />
-		</route> -->
 
 	</camelContext>
 
@@ -280,8 +307,7 @@
 		<route id="describe-pessoa-route">
 			<from uri="activemq:queue:pessoa-describe" />
 			<unmarshal ref="pessoa-data-format" />
-			<to
-				uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver" />
+			<to uri="bean-validator://foo?validationProviderResolver=#validationProviderResolver" />
 			<bean ref="pessoaService" method="describePessoa" />
 			<log message="Result: ${body}" />
 		</route>
@@ -295,10 +321,7 @@
 			</setHeader>
 			<to uri="activemq:testeMensagemAgendadaConversaoOut?timeToLive=60000" />
 		</route>
-
-
-
-
+		
 		<route id="convert-json-to-xml">
 			<from uri="activemq:queue:json-to-xml" />
 			<log message="Original: ${body}" />
@@ -317,15 +340,15 @@
 			<log message="Converted again: ${body}" />
 		</route>
 
-		<!-- <route id="call-remote-soap-service"> <from uri=""/> </route> -->
+<!-- 		<route id="call-remote-soap-service"> <from uri=""/> </route>
 
-		<!-- <route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
+		<route id="deadLetterQueueHanlderRoute"> <from uri="activemq:queue:DLQ"/> 
 			<log message="Messagem com erro: ${body}" /> </route> -->
 
 
 	</camelContext>
-
-	<!-- Handler de erro da mensagem -->
+<!-- 
+	Handler de erro da mensagem -->
 	<bean id="messageExceptionHandler"
 		class="com.redhat.brazil.consulting.fuse.messaging.jms.MessageExceptionHandler" />
 

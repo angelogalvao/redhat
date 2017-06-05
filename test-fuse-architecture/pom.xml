@@ -38,7 +38,10 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jms</artifactId>
@@ -171,16 +174,36 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 		</dependency>
+
+		<!-- TEST -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-test-blueprint</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.compendium</artifactId>
+			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
+
 	</dependencies>
 	<repositories>
 		<repository>
@@ -276,6 +299,19 @@
 							javax.transaction,
 							org.apache.camel.spring.spi,
 							org.apache.cxf.jaxrs.provider.json,
+
+							javax.servlet;version="[3,4)",
+							javax.servlet.http;version="[3,4)",
+							org.apache.camel.*,
+							org.eclipse.jetty.security;version="[8,10)",
+							org.eclipse.jetty.server.nio;version="[8,10)",
+							org.eclipse.jetty.util.security;version="[8,10)",
+							org.keycloak.*;version="2.4.0.Final-redhat-1",
+							org.osgi.service.blueprint.container,
+							org.osgi.service.event,
+							org.keycloak.adapters.osgi,
+							org.keycloak.adapters.jetty,
+							org.springframework.*,
 							*
 						</Import-Package>
 						<Import-Service>org.apache.aries.blueprint.NamespaceHandler;
@@ -328,40 +364,16 @@
 					</execution>
 				</executions>
 			</plugin>
-			 
-		<!-- 	<plugin>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-codegen-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-sources</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
-							<wsdlOptions>
-								<wsdlOption>
-									<wsdl>${basedir}/src/main/resources/wsdl/GerenciarContratosService.wsdl</wsdl>
-									
-									<extraargs>
-									
-										<extraarg>-p</extraarg>
-										<extraarg>http://portoconecta.com.br/services/GerenciarContratos/=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://portoconecta.com.br/services/GerenciarContratos=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg>
-										
-									</extraargs>
-									
-								</wsdlOption>
-							</wsdlOptions>
-						</configuration>
-						<goals>
-							<goal>wsdl2java</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			 -->
-			
+
+			<!-- <plugin> <groupId>org.apache.cxf</groupId> <artifactId>cxf-codegen-plugin</artifactId> 
+				<executions> <execution> <id>generate-sources</id> <phase>generate-sources</phase> 
+				<configuration> <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot> 
+				<wsdlOptions> <wsdlOption> <wsdl>${basedir}/src/main/resources/wsdl/GerenciarContratosService.wsdl</wsdl> 
+				<extraargs> <extraarg>-p</extraarg> <extraarg>http://portoconecta.com.br/services/GerenciarContratos/=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg> 
+				<extraarg>-p</extraarg> <extraarg>http://portoconecta.com.br/services/GerenciarContratos=com.redhat.brazil.consulting.fuse.webservices.soap.client</extraarg> 
+				</extraargs> </wsdlOption> </wsdlOptions> </configuration> <goals> <goal>wsdl2java</goal> 
+				</goals> </execution> </executions> </plugin> -->
+
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>fabric-cxf-plugins</artifactId>
